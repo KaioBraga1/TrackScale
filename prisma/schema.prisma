@@ -1,0 +1,252 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ConsentStatus {
+  PENDING
+  GRANTED
+  DENIED
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String              @id @default(cuid())
+  email                String              @unique
+  password             String
+  name                 String?
+  billingCompany       String?
+  billingAddress1      String?
+  billingAddress2      String?
+  billingCity          String?
+  billingState         String?
+  billingZip           String?
+  billingCountry       String?
+  billingTaxId         String?
+  timezone             String              @default("UTC")
+  affiliateCode        String?
+  referredBy           String?
+  membershipStatus     String              @default("FREE")
+  trialEndsAt          DateTime?
+  subscriptionPrice    Decimal?            @db.Decimal(10, 2)
+  subscriptionInterval String?
+  subscriptionFeatures Json?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  links                Link[]
+  spotifyConnections   SpotifyConnection[]
+  artists              Artist[]
+  pixels               Pixel[]
+
+  @@index([email])
+}
+
+model Link {
+  id                String                     @id @default(cuid())
+  userId            String
+  user              User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title             String
+  artist            String?
+  artistId          String?
+  artistRecord      Artist?                    @relation(fields: [artistId], references: [id], onDelete: SetNull)
+  slug              String                     @unique
+  coverUrl          String?
+  isActive          Boolean                    @default(true)
+  theme             String                     @default("dark-navy")
+  metaPixelId       String?
+  spotifyPlaylistId String?
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  platforms         Platform[]
+  visitors          Visitor[]
+  clicks            Click[]
+  pixels            LinkPixel[]
+  followerSnapshots PlaylistFollowerSnapshot[]
+  artists           LinkArtist[]
+
+  @@index([userId])
+  @@index([slug])
+  @@index([isActive, slug])
+  @@index([userId, createdAt])
+  @@index([spotifyPlaylistId])
+}
+
+model Artist {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  spotifyId       String?
+  imageUrl        String?
+  links           Link[]
+  linkAssignments LinkArtist[]
+  pixels          ArtistPixel[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([userId, name])
+  @@unique([userId, spotifyId])
+  @@index([userId])
+}
+
+model LinkArtist {
+  linkId   String
+  artistId String
+  link     Link   @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@id([linkId, artistId])
+  @@index([artistId])
+}
+
+model Pixel {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  metaPixelId String
+  links       LinkPixel[]
+  artists     ArtistPixel[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([userId, metaPixelId])
+  @@index([userId])
+}
+
+model LinkPixel {
+  linkId  String
+  pixelId String
+  link    Link   @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  pixel   Pixel  @relation(fields: [pixelId], references: [id], onDelete: Cascade)
+
+  @@id([linkId, pixelId])
+  @@index([pixelId])
+}
+
+model ArtistPixel {
+  artistId String
+  pixelId  String
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  pixel    Pixel  @relation(fields: [pixelId], references: [id], onDelete: Cascade)
+
+  @@id([artistId, pixelId])
+  @@index([pixelId])
+}
+
+model Platform {
+  id          String  @id @default(cuid())
+  linkId      String
+  link        Link    @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  name        String
+  url         String
+  deeplinkUrl String?
+  order       Int     @default(0)
+  isActive    Boolean @default(true)
+
+  @@unique([linkId, name])
+  @@index([linkId])
+}
+
+model Visitor {
+  id                 String        @id @default(cuid())
+  linkId             String
+  link               Link          @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  ip                 String?
+  country            String?
+  region             String?
+  city               String?
+  zipCode            String?
+  latitude           Float?
+  longitude          Float?
+  isDatacenter       Boolean       @default(false)
+  device             String?
+  browser            String?
+  os                 String?
+  referrer           String?
+  fingerprint        String?
+  utmSource          String?
+  utmMedium          String?
+  utmCampaign        String?
+  utmContent         String?
+  utmTerm            String?
+  fbclid             String?
+  gclid              String?
+  botScore           Float         @default(0)
+  consentStatus      ConsentStatus @default(PENDING)
+  spotifyUserId      String?
+  spotifyDisplayName String?
+  spotifyEmail       String?
+  createdAt          DateTime      @default(now())
+  clicks             Click[]
+
+  @@index([linkId])
+  @@index([createdAt])
+  @@index([linkId, createdAt])
+  @@index([fingerprint])
+}
+
+model Click {
+  id             String   @id @default(cuid())
+  linkId         String
+  link           Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  visitorId      String?
+  visitor        Visitor? @relation(fields: [visitorId], references: [id])
+  eventType      String
+  platform       String?
+  botScore       Float    @default(0)
+  isFiltered     Boolean  @default(false)
+  consentGranted Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@index([linkId])
+  @@index([linkId, eventType])
+  @@index([createdAt])
+  @@index([linkId, createdAt])
+  @@index([botScore])
+  @@index([isFiltered])
+  @@index([consentGranted])
+}
+
+model SpotifyConnection {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  spotifyId    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model PlaylistFollowerSnapshot {
+  id           String   @id @default(cuid())
+  linkId       String
+  link         Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  snapshotDate DateTime @db.Date
+  followers    Int
+  createdAt    DateTime @default(now())
+
+  @@unique([linkId, snapshotDate])
+  @@index([linkId, snapshotDate])
+}
+
+model BillingAddress {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  company   String?
+  address1  String?
+  address2  String?
+  city      String?
+  state     String?
+  zip       String?
+  country   String?
+  taxId     String?
+  updatedAt DateTime @updatedAt
+}
