@@ -41,6 +41,7 @@ model User {
   spotifyConnections   SpotifyConnection[]
   artists              Artist[]
   pixels               Pixel[]
+  passwordResetTokens  PasswordResetToken[]
 
   @@index([email])
 }
@@ -236,6 +237,19 @@ model PlaylistFollowerSnapshot {
 
   @@unique([linkId, snapshotDate])
   @@index([linkId, snapshotDate])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
 }
 
 model BillingAddress {

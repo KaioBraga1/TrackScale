@@ -265,33 +265,29 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme }: Smar
         </div>
       )}
 
-      {platforms.map((platform) => {
+      {platforms.map((platform, i) => {
         const cfg = PLATFORM_CONFIG[platform.name]
         return (
           <button
             key={platform.name}
             onClick={() => handlePlatformClick(platform.name, platform.deeplinkUrl || platform.url)}
-            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98] hover:brightness-110"
+            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 active:scale-[0.97] hover:scale-[1.01] hover:brightness-110 animate-fade-in-up"
             style={{
               backgroundColor: theme.card,
               border: `1px solid ${theme.border}`,
+              animationDelay: `${i * 60}ms`,
             }}
           >
-            {/* Icon box */}
             <div
-              className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+              className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
               style={{ background: cfg?.iconBg ?? '#333' }}
             >
               {cfg?.icon}
             </div>
-
-            {/* Label */}
             <span className="flex-1 text-left text-white font-semibold text-[15px]">
               {cfg?.label ?? platform.name}
             </span>
-
-            {/* Chevron */}
-            <svg viewBox="0 0 24 24" className="w-4 h-4 flex-shrink-0" fill="none">
+            <svg viewBox="0 0 24 24" className="w-4 h-4 flex-shrink-0 transition-transform duration-200" fill="none">
               <path d="M9 18l6-6-6-6" stroke="#666688" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
