@@ -50,8 +50,9 @@ export interface SpotifyMetadata {
 }
 
 export function parseSpotifyUrl(url: string): { type: SpotifyItemType; id: string } | null {
+  // Aceita URLs com ou sem prefixo de locale: /intl-pt/, /intl-en/, etc.
   const match = url.match(
-    /open\.spotify\.com\/(track|album|playlist)\/([A-Za-z0-9]{22})/
+    /open\.spotify\.com\/(?:[a-z]{2,5}-[a-z]{2,5}\/)?(?:embed\/)?(track|album|playlist)\/([A-Za-z0-9]{22})/
   )
   if (!match) return null
   return { type: match[1] as SpotifyItemType, id: match[2] }
