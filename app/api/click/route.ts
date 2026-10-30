@@ -88,6 +88,18 @@ export async function POST(req: NextRequest) {
           where: { isActive: true },
           select: { name: true },
         },
+        pixels: {
+          select: { pixel: { select: { metaPixelId: true } } },
+        },
+        artists: {
+          select: {
+            artist: {
+              select: {
+                pixels: { select: { pixel: { select: { metaPixelId: true } } } },
+              },
+            },
+          },
+        },
       },
     })
 
@@ -190,27 +202,30 @@ export async function POST(req: NextRequest) {
         select: { id: true },
       })
 
-      // CAPI: só dispara se tráfego real E consentimento GRANTED
-      // Fire-and-forget — nunca bloqueia a resposta
-      const capiToken = process.env.META_CAPI_ACCESS_TOKEN
-      const capiPixelId = link.metaPixelId ?? process.env.META_CAPI_DEFAULT_PIXEL_ID
-      if (!filtered && visitor.consentStatus === 'GRANTED' && capiToken && capiPixelId) {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-        sendCapiEventSilent({
-          pixelId: capiPixelId,
-          accessToken: capiToken,
-          eventName: 'ViewContent',
-          eventId: viewClick.id,
-          eventSourceUrl: `${appUrl}/l/${slug}`,
-          clientIp: ip,
-          clientUserAgent: ua,
-          fbclid: fbclid ?? null,
-          country: geo?.country ?? null,
-          state: geo?.region ?? null,
-          city: geo?.city ?? null,
-          zip: geo?.zipCode ?? null,
-          externalId: visitor.id,
-        })
+      // CAPI: dispara para todos os pixels vinculados ao link
+      if (!filtered && visitor.consentStatus === 'GRANTED') {
+        const capiToken = process.env.META_CAPI_ACCESS_TOKEN
+        const pixelIds = resolvePixelIds(link)
+        if (capiToken && pixelIds.length > 0) {
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+          for (const pixelId of pixelIds) {
+            sendCapiEventSilent({
+              pixelId,
+              accessToken: capiToken,
+              eventName: 'ViewContent',
+              eventId: `${viewClick.id}_${pixelId}`,
+              eventSourceUrl: `${appUrl}/l/${slug}`,
+              clientIp: ip,
+              clientUserAgent: ua,
+              fbclid: fbclid ?? null,
+              country: geo?.country ?? null,
+              state: geo?.region ?? null,
+              city: geo?.city ?? null,
+              zip: geo?.zipCode ?? null,
+              externalId: visitor.id,
+            })
+          }
+        }
       }
 
       return NextResponse.json({
@@ -240,25 +255,29 @@ export async function POST(req: NextRequest) {
     })
 
     // CAPI Lead event no clique de plataforma — representa intenção de escuta
-    const capiToken = process.env.META_CAPI_ACCESS_TOKEN
-    const capiPixelId = link.metaPixelId ?? process.env.META_CAPI_DEFAULT_PIXEL_ID
-    if (!filtered && requestedVisitor?.consentStatus === 'GRANTED' && capiToken && capiPixelId) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-      sendCapiEventSilent({
-        pixelId: capiPixelId,
-        accessToken: capiToken,
-        eventName: 'Lead',
-        eventId: platformClick.id,
-        eventSourceUrl: `${appUrl}/l/${slug}`,
-        clientIp: ip,
-        clientUserAgent: ua,
-        fbclid: fbclid ?? null,
-        country: geo?.country ?? null,
-        state: geo?.region ?? null,
-        city: geo?.city ?? null,
-        zip: geo?.zipCode ?? null,
-        externalId: requestedVisitor?.id ?? '',
-      })
+    if (!filtered && requestedVisitor?.consentStatus === 'GRANTED') {
+      const capiToken = process.env.META_CAPI_ACCESS_TOKEN
+      const pixelIds = resolvePixelIds(link)
+      if (capiToken && pixelIds.length > 0) {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+        for (const pixelId of pixelIds) {
+          sendCapiEventSilent({
+            pixelId,
+            accessToken: capiToken,
+            eventName: 'Lead',
+            eventId: `${platformClick.id}_${pixelId}`,
+            eventSourceUrl: `${appUrl}/l/${slug}`,
+            clientIp: ip,
+            clientUserAgent: ua,
+            fbclid: fbclid ?? null,
+            country: geo?.country ?? null,
+            state: geo?.region ?? null,
+            city: geo?.city ?? null,
+            zip: geo?.zipCode ?? null,
+            externalId: requestedVisitor?.id ?? '',
+          })
+        }
+      }
     }
 
     return NextResponse.json({ ok: true, isFiltered: filtered })
@@ -269,6 +288,22 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+function resolvePixelIds(link: {
+  metaPixelId?: string | null
+  pixels?: { pixel: { metaPixelId: string } }[]
+  artists?: { artist: { pixels: { pixel: { metaPixelId: string } }[] } }[]
+}): string[] {
+  const ids = new Set<string>()
+  if (link.metaPixelId) ids.add(link.metaPixelId)
+  for (const lp of link.pixels ?? []) ids.add(lp.pixel.metaPixelId)
+  for (const la of link.artists ?? []) {
+    for (const ap of la.artist.pixels) ids.add(ap.pixel.metaPixelId)
+  }
+  const fallback = process.env.META_CAPI_DEFAULT_PIXEL_ID
+  if (ids.size === 0 && fallback) ids.add(fallback)
+  return [...ids]
 }
 
 function parseBrowser(ua: string): string | null {

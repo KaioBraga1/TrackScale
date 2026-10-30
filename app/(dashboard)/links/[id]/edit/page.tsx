@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { updateLink } from '../../actions'
 import LinkForm from '@/components/LinkForm'
 import Link from 'next/link'
+import type { LinkCustomization } from '@/components/SmartLinkVisual'
 
 export const metadata = { title: 'Editar Link' }
 
@@ -18,6 +19,7 @@ export default async function EditLinkPage({ params }: { params: { id: string } 
       pixels: { select: { pixelId: true } },
       artists: { select: { artistId: true } },
     },
+    // customization is selected via include above (it's on the Link model)
   })
 
   if (!link || link.userId !== session.user.id) notFound()
@@ -67,6 +69,7 @@ export default async function EditLinkPage({ params }: { params: { id: string } 
           theme: link.theme ?? 'dark-navy',
           metaPixelId: link.metaPixelId ?? '',
           platforms: link.platforms,
+          customization: (link.customization ?? undefined) as LinkCustomization | undefined,
         }}
       />
     </div>

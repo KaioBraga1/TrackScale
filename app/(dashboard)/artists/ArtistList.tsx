@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useState } from 'react'
+import { useFormState, useFormStatus } from 'react-dom'
 import { createArtist, updateArtist, deleteArtist, type ArtistFormState } from './actions'
 
 type Artist = {
@@ -58,7 +59,7 @@ export default function ArtistList({ artists }: { artists: Artist[] }) {
 }
 
 function CreateArtistForm() {
-  const [state, action, pending] = useActionState<ArtistFormState, FormData>(createArtist, null)
+  const [state, action] = useFormState<ArtistFormState, FormData>(createArtist, null)
 
   return (
     <section className="card space-y-4">
@@ -85,11 +86,18 @@ function CreateArtistForm() {
             placeholder="0TnOYISbd1XYRBk9myaseg"
           />
         </div>
-        <button type="submit" disabled={pending} className="btn-primary self-end">
-          {pending ? 'Salvando…' : 'Adicionar'}
-        </button>
+        <ArtistSubmitButton label="Adicionar" />
       </form>
     </section>
+  )
+}
+
+function ArtistSubmitButton({ label }: { label: string }) {
+  const { pending } = useFormStatus()
+  return (
+    <button type="submit" disabled={pending} className="btn-primary self-end">
+      {pending ? 'Salvando…' : label}
+    </button>
   )
 }
 
@@ -165,7 +173,7 @@ function ArtistCard({ artist, onEdit }: { artist: Artist; onEdit: () => void }) 
 
 function EditArtistForm({ artist, onClose }: { artist: Artist; onClose: () => void }) {
   const boundAction = updateArtist.bind(null, artist.id)
-  const [state, action, pending] = useActionState<ArtistFormState, FormData>(boundAction, null)
+  const [state, action] = useFormState<ArtistFormState, FormData>(boundAction, null)
 
   return (
     <article className="card space-y-4" style={{ border: '1px solid var(--accent-glow)' }}>
@@ -207,9 +215,7 @@ function EditArtistForm({ artist, onClose }: { artist: Artist; onClose: () => vo
             placeholder="https://i.scdn.co/…"
           />
         </div>
-        <button type="submit" disabled={pending} className="btn-primary self-end sm:col-start-3 sm:row-start-1">
-          {pending ? 'Salvando…' : 'Guardar'}
-        </button>
+        <ArtistSubmitButton label="Guardar" />
       </form>
     </article>
   )

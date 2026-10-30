@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import SmartLink from '@/components/SmartLink'
+import type { LinkCustomization } from '@/components/SmartLinkVisual'
 
 interface PageProps {
   params: { slug: string }
@@ -29,6 +30,7 @@ async function getLink(slug: string) {
       coverUrl: true,
       theme: true,
       metaPixelId: true,
+      customization: true,
       pixels: {
         select: { pixel: { select: { metaPixelId: true } } },
       },
@@ -80,6 +82,9 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
   if (!link) notFound()
 
   const theme = THEMES[link.theme ?? 'dark-navy'] ?? THEMES['dark-navy']
+  const customization = (link.customization ?? {}) as LinkCustomization
+  const coverSize = customization.coverSize ?? 'lg'
+  const coverDim = coverSize === 'lg' ? 'w-52 h-52' : coverSize === 'sm' ? 'w-28 h-28' : null
 
   const pixelIds = [
     ...link.pixels.map((a) => a.pixel.metaPixelId),
@@ -121,36 +126,41 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
         {/* Content */}
         <div className="w-full max-w-sm flex flex-col items-center space-y-5 pb-16 relative z-10">
           {/* Album cover */}
-          <div
-            className="w-52 h-52 rounded-3xl overflow-hidden flex-shrink-0"
-            style={{
-              backgroundColor: theme.card,
-              boxShadow: link.coverUrl
-                ? '0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)'
-                : '0 8px 40px rgba(0,0,0,0.5)',
-            }}
-          >
-            {link.coverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={link.coverUrl}
-                alt={link.title}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10" style={{ color: theme.border }}>
-                  <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" strokeWidth="1.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            )}
-          </div>
+          {coverDim && (
+            <div
+              className={`${coverDim} rounded-3xl overflow-hidden flex-shrink-0`}
+              style={{
+                backgroundColor: theme.card,
+                boxShadow: link.coverUrl
+                  ? '0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)'
+                  : '0 8px 40px rgba(0,0,0,0.5)',
+              }}
+            >
+              {link.coverUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={link.coverUrl}
+                  alt={link.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10" style={{ color: theme.border }}>
+                    <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" strokeWidth="1.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              )}
+            </div>
+          )}
 
-          {/* Title + artist */}
+          {/* Title + artist + bio */}
           <div className="text-center space-y-1 px-4">
             <h1 className="text-2xl font-bold text-white leading-tight">{link.title}</h1>
             {link.artist && (
               <p className="text-sm" style={{ color: '#8888aa' }}>{link.artist}</p>
+            )}
+            {customization.bioText && (
+              <p className="text-xs italic mt-2" style={{ color: '#6666aa' }}>{customization.bioText}</p>
             )}
           </div>
 
@@ -172,6 +182,7 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
               platforms={link.platforms}
               metaPixelIds={pixelIds}
               theme={theme}
+              customization={customization}
             />
           </div>
         </div>

@@ -60,6 +60,7 @@ model Link {
   theme             String                     @default("dark-navy")
   metaPixelId       String?
   spotifyPlaylistId String?
+  customization     Json?
   createdAt         DateTime                   @default(now())
   updatedAt         DateTime                   @updatedAt
   platforms         Platform[]

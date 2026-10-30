@@ -10,6 +10,14 @@ import { Prisma } from '@prisma/client'
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{0,48}[a-z0-9]$|^[a-z0-9]$/
 const VALID_THEMES = ['dark-navy', 'dark-purple', 'midnight', 'forest', 'ocean', 'crimson'] as const
 
+const customizationSchema = z.object({
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  buttonStyle: z.enum(['pill', 'rounded', 'square']).optional(),
+  coverSize: z.enum(['lg', 'sm', 'hidden']).optional(),
+  showVerified: z.boolean().optional(),
+  bioText: z.string().max(120).optional(),
+}).optional()
+
 const platformSchema = z.object({
   name: z.enum(['spotify', 'apple_music', 'youtube_music', 'deezer']),
   url: z.string().url('URL inválida').max(2048),
@@ -35,6 +43,7 @@ const linkSchema = z.object({
   artistIds: z.array(z.string().cuid()).max(50),
   platforms: z.array(platformSchema).min(1, 'Adicione ao menos um destino de streaming')
     .refine((platforms) => platforms.some((platform) => platform.isActive), 'Ative ao menos uma plataforma'),
+  customization: customizationSchema,
 })
 
 export type LinkFormState = {
@@ -62,7 +71,7 @@ export async function createLink(
 
   const {
     title, artist, slug, coverUrl, theme, spotifyArtistId, spotifyArtistName,
-    spotifyPlaylistId, pixelIds, artistIds: selectedArtistIds, platforms,
+    spotifyPlaylistId, pixelIds, artistIds: selectedArtistIds, platforms, customization,
   } = parsed.data
 
   try {
@@ -90,6 +99,7 @@ export async function createLink(
           coverUrl: coverUrl || null,
           theme,
           spotifyPlaylistId: spotifyPlaylistId || null,
+          customization: customization ?? undefined,
           platforms: {
             create: platforms.map(({ name, url, deeplinkUrl, order, isActive }) => ({
               name, url, deeplinkUrl: deeplinkUrl || null, order, isActive,
@@ -143,7 +153,7 @@ export async function updateLink(
 
   const {
     title, artist, slug, coverUrl, theme, spotifyArtistId, spotifyArtistName,
-    spotifyPlaylistId, pixelIds, artistIds: selectedArtistIds, platforms,
+    spotifyPlaylistId, pixelIds, artistIds: selectedArtistIds, platforms, customization,
   } = parsed.data
 
   try {
@@ -173,6 +183,7 @@ export async function updateLink(
           coverUrl: coverUrl || null,
           theme,
           spotifyPlaylistId: spotifyPlaylistId || null,
+          customization: customization ?? undefined,
           platforms: {
             create: platforms.map(({ name, url, deeplinkUrl, order, isActive }) => ({
               name, url, deeplinkUrl: deeplinkUrl || null, order, isActive,
@@ -231,6 +242,12 @@ function extractLinkFromForm(formData: FormData) {
     return url ? [{ name, url, deeplinkUrl, order: Number.isInteger(order) ? order : PLATFORMS.indexOf(name), isActive }] : []
   })
 
+  let customization: unknown = undefined
+  const rawCustomization = formData.get('customization') as string | null
+  if (rawCustomization) {
+    try { customization = JSON.parse(rawCustomization) } catch { /* ignore malformed JSON */ }
+  }
+
   return {
     title: formData.get('title'),
     artist: ((formData.get('artist') as string) ?? '').trim(),
@@ -243,6 +260,7 @@ function extractLinkFromForm(formData: FormData) {
     pixelIds: formData.getAll('pixelIds').filter((id): id is string => typeof id === 'string' && id.length > 0),
     artistIds: formData.getAll('artistIds').filter((id): id is string => typeof id === 'string' && id.length > 0),
     platforms,
+    customization,
   }
 }
 

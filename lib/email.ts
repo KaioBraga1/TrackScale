@@ -1,14 +1,18 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const FROM = process.env.RESEND_FROM ?? 'TrackScale <noreply@trackscale.com.br>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://track-scale-r8j6.vercel.app'
+
+function getResend() {
+  const key = process.env.RESEND_API_KEY
+  if (!key) throw new Error('RESEND_API_KEY não configurado')
+  return new Resend(key)
+}
 
 export async function sendPasswordResetEmail(email: string, token: string) {
   const resetUrl = `${APP_URL}/reset-password/${token}`
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: 'Redefinir senha — TrackScale',

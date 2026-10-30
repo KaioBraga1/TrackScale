@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { LinkCustomization } from '@/components/SmartLinkVisual'
 
 interface Platform {
   name: string
@@ -20,6 +21,7 @@ interface SmartLinkProps {
   platforms: Platform[]
   metaPixelIds: string[]
   theme: Theme
+  customization?: LinkCustomization
 }
 
 type ConsentStatus = 'PENDING' | 'GRANTED' | 'DENIED'
@@ -44,16 +46,24 @@ declare global {
   }
 }
 
-export default function SmartLink({ slug, platforms, metaPixelIds, theme }: SmartLinkProps) {
+const BUTTON_RADIUS: Record<string, string> = {
+  pill:    '9999px',
+  rounded: '16px',
+  square:  '8px',
+}
+
+export default function SmartLink({ slug, platforms, metaPixelIds, theme, customization }: SmartLinkProps) {
+  const accentColor = customization?.accentColor ?? '#7c3aed'
+  const btnRadius   = BUTTON_RADIUS[customization?.buttonStyle ?? 'rounded']
   const trackedRef = useRef(false)
   const visitorIdRef = useRef<string | null>(null)
   const viewClickIdRef = useRef<string | null>(null)
-  const consentStatusRef = useRef<ConsentStatus>('PENDING')
+  const consentStatusRef = useRef<ConsentStatus>('GRANTED')
   const pixelFiredRef = useRef(false)
   const [spotifyConnected, setSpotifyConnected] = useState(false)
   // null = verificando, true = humano real, false = filtrado
   const [isVerified, setIsVerified] = useState<boolean | null>(null)
-  const [consentStatus, setConsentStatus] = useState<ConsentStatus>('PENDING')
+  const [consentStatus, setConsentStatus] = useState<ConsentStatus>('GRANTED')
   const [consentPersisted, setConsentPersisted] = useState(false)
   const [consentError, setConsentError] = useState<string | null>(null)
 
@@ -271,10 +281,11 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme }: Smar
           <button
             key={platform.name}
             onClick={() => handlePlatformClick(platform.name, platform.deeplinkUrl || platform.url)}
-            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 active:scale-[0.97] hover:scale-[1.01] hover:brightness-110 animate-fade-in-up"
+            className="w-full flex items-center gap-3 px-4 py-3.5 transition-all duration-200 active:scale-[0.97] hover:scale-[1.01] hover:brightness-110 animate-fade-in-up"
             style={{
               backgroundColor: theme.card,
               border: `1px solid ${theme.border}`,
+              borderRadius: btnRadius,
               animationDelay: `${i * 60}ms`,
             }}
           >
@@ -294,44 +305,29 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme }: Smar
         )
       })}
 
-      {consentStatus === 'PENDING' ? (
-        <div
-          className="mt-4 rounded-xl p-3 space-y-2"
-          style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}
-          role="group"
-          aria-label="Preferências de privacidade"
-        >
-          <p className="text-xs leading-relaxed" style={{ color: '#aaaacc' }}>
-            Ajude a medir visitas e campanhas. Sua escolha não altera o acesso à música.
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => void chooseConsent('GRANTED')}
-              className="flex-1 rounded-lg px-3 py-2 text-xs font-semibold text-white"
-              style={{ backgroundColor: '#7c3aed' }}
-            >
-              Aceitar
-            </button>
-            <button
-              type="button"
-              onClick={() => void chooseConsent('DENIED')}
-              className="flex-1 rounded-lg px-3 py-2 text-xs font-medium"
-              style={{ color: '#aaaacc', border: `1px solid ${theme.border}` }}
-            >
-              Recusar
-            </button>
-          </div>
-        </div>
-      ) : (
+      {consentStatus === 'DENIED' ? (
         <button
           type="button"
-          onClick={() => void chooseConsent('PENDING')}
-          className="w-full mt-3 text-xs underline underline-offset-2"
-          style={{ color: '#666688' }}
+          onClick={() => void chooseConsent('GRANTED')}
+          className="w-full mt-3 text-xs underline underline-offset-2 text-center"
+          style={{ color: '#555570' }}
         >
-          Alterar preferências de privacidade
+          Reativar rastreamento de análise
         </button>
+      ) : (
+        <div className="mt-4 flex items-center justify-between gap-2 px-1">
+          <p className="text-xs" style={{ color: '#44445a' }}>
+            Este link usa análise para medir campanhas.
+          </p>
+          <button
+            type="button"
+            onClick={() => void chooseConsent('DENIED')}
+            className="text-xs whitespace-nowrap underline underline-offset-2 flex-shrink-0"
+            style={{ color: '#44445a' }}
+          >
+            Recusar
+          </button>
+        </div>
       )}
       {consentError && (
         <p role="alert" className="text-xs text-amber-400 text-center">
@@ -365,11 +361,11 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme }: Smar
 function readConsentStatus(): ConsentStatus {
   try {
     const stored = localStorage.getItem(CONSENT_STORAGE_KEY)
-    if (stored === 'GRANTED' || stored === 'DENIED') return stored
+    if (stored === 'DENIED') return 'DENIED'
   } catch (err) {
     console.error('[consent] browser storage unavailable:', err)
   }
-  return 'PENDING'
+  return 'GRANTED'
 }
 
 function parseUTMParams(): Record<string, string | null> {
