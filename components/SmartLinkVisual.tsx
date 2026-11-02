@@ -139,16 +139,16 @@ export default function SmartLinkVisual({
 
       {/* Title + artist + bio */}
       <div style={{ textAlign: 'center', padding: '16px 20px 8px', position: 'relative', zIndex: 1 }}>
-        <h2 style={{ color: 'white', fontSize: 22, fontWeight: 700, lineHeight: 1.2, margin: 0 }}>
+        <h2 style={{ color: 'white', fontSize: 24, fontWeight: 700, lineHeight: 1.2, margin: 0 }}>
           {title || 'Título da música'}
         </h2>
         {(artist || !title) && (
-          <p style={{ color: '#8888aa', fontSize: 13, marginTop: 4 }}>
+          <p style={{ color: '#b8b8d0', fontSize: 15, marginTop: 4 }}>
             {artist || 'Artista'}
           </p>
         )}
         {bioText && (
-          <p style={{ color: '#6666aa', fontSize: 11, marginTop: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
+          <p style={{ color: '#9999bb', fontSize: 13, marginTop: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
             {bioText}
           </p>
         )}
@@ -189,7 +189,7 @@ export default function SmartLinkVisual({
               <div style={{ width: 40, height: 40, borderRadius: 10, background: cfg.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {cfg.icon}
               </div>
-              <span style={{ color: 'white', fontWeight: 600, fontSize: 14, flex: 1 }}>{cfg.label}</span>
+              <span style={{ color: 'white', fontWeight: 600, fontSize: 15, flex: 1 }}>{cfg.label}</span>
               <svg viewBox="0 0 24 24" style={{ width: 14, height: 14 }} fill="none">
                 <path d="M9 18l6-6-6-6" stroke="#666688" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -205,7 +205,7 @@ export default function SmartLinkVisual({
 
       {/* Consent banner */}
       <div style={{ margin: '12px 16px 8px', backgroundColor: theme.card, border: `1px solid ${theme.border}`, borderRadius: 12, padding: '10px 12px', position: 'relative', zIndex: 1 }}>
-        <p style={{ color: '#aaaacc', fontSize: 10, marginBottom: 8, lineHeight: 1.5 }}>
+        <p style={{ color: '#bbbbdd', fontSize: 11, marginBottom: 8, lineHeight: 1.5 }}>
           Ajude a medir visitas e campanhas. Sua escolha não altera o acesso à música.
         </p>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -216,7 +216,7 @@ export default function SmartLinkVisual({
 
       {/* Footer */}
       <div style={{ textAlign: 'center', padding: '20px 0 24px', position: 'relative', zIndex: 1 }}>
-        <p style={{ color: '#33334a', fontSize: 10 }}>Powered by TrackScale</p>
+        <p style={{ color: '#60607a', fontSize: 11 }}>Powered by TrackScale</p>
       </div>
     </div>
   )

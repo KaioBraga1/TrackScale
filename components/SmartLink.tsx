@@ -295,7 +295,7 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
             >
               {cfg?.icon}
             </div>
-            <span className="flex-1 text-left text-white font-semibold text-[15px]">
+            <span className="flex-1 text-left text-white font-semibold text-base">
               {cfg?.label ?? platform.name}
             </span>
             <svg viewBox="0 0 24 24" className="w-4 h-4 flex-shrink-0 transition-transform duration-200" fill="none">
@@ -310,20 +310,20 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
           type="button"
           onClick={() => void chooseConsent('GRANTED')}
           className="w-full mt-3 text-xs underline underline-offset-2 text-center"
-          style={{ color: '#555570' }}
+          style={{ color: '#8888aa' }}
         >
           Reativar rastreamento de análise
         </button>
       ) : (
         <div className="mt-4 flex items-center justify-between gap-2 px-1">
-          <p className="text-xs" style={{ color: '#44445a' }}>
+          <p className="text-xs" style={{ color: '#8888aa' }}>
             Este link usa análise para medir campanhas.
           </p>
           <button
             type="button"
             onClick={() => void chooseConsent('DENIED')}
             className="text-xs whitespace-nowrap underline underline-offset-2 flex-shrink-0"
-            style={{ color: '#44445a' }}
+            style={{ color: '#8888aa' }}
           >
             Recusar
           </button>

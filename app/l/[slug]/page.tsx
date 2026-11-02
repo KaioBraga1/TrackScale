@@ -155,12 +155,12 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
 
           {/* Title + artist + bio */}
           <div className="text-center space-y-1 px-4">
-            <h1 className="text-2xl font-bold text-white leading-tight">{link.title}</h1>
+            <h1 className="text-3xl font-bold text-white leading-tight">{link.title}</h1>
             {link.artist && (
-              <p className="text-sm" style={{ color: '#8888aa' }}>{link.artist}</p>
+              <p className="text-base" style={{ color: '#b8b8d0' }}>{link.artist}</p>
             )}
             {customization.bioText && (
-              <p className="text-xs italic mt-2" style={{ color: '#6666aa' }}>{customization.bioText}</p>
+              <p className="text-sm italic mt-2" style={{ color: '#9999bb' }}>{customization.bioText}</p>
             )}
           </div>
 
@@ -189,7 +189,7 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
 
         {/* Footer */}
         <div className="mt-auto pb-8 text-center relative z-10">
-          <p className="text-xs" style={{ color: '#33334a' }}>Powered by TrackScale</p>
+          <p className="text-xs" style={{ color: '#60607a' }}>Powered by TrackScale</p>
         </div>
       </div>
     </>
