@@ -238,19 +238,6 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
 
   function handlePlatformClick(platformName: string, url: string) {
     trackClick(platformName)
-
-    // Spotify: passa pelo OAuth antes de redirecionar para a música
-    if (platformName === 'spotify' && !spotifyConnected) {
-      const vid = visitorIdRef.current ?? ''
-      const authUrl =
-        `/api/auth/spotify/visitor` +
-        `?slug=${encodeURIComponent(slug)}` +
-        `&visitorId=${encodeURIComponent(vid)}` +
-        `&returnUrl=${encodeURIComponent(url)}`
-      window.location.assign(authUrl)
-      return
-    }
-
     window.location.assign(url)
   }
 
