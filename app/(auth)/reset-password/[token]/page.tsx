@@ -14,7 +14,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (password !== confirm) { setError('As senhas não coincidem.'); return }
+    if (password !== confirm) { setError('Passwords do not match.'); return }
     setLoading(true)
     setError(null)
 
@@ -55,13 +55,13 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
 
         <div className="card space-y-5">
           <div>
-            <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Nova senha</h2>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Crie uma senha segura com pelo menos 8 caracteres.</p>
+            <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>New password</h2>
+            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Create a secure password with at least 8 characters.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="label">Nova senha</label>
+              <label className="label">New password</label>
               <div className="relative">
                 <input
                   type={showPass ? 'text' : 'password'}
@@ -71,7 +71,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="input pr-10"
-                  placeholder="Mínimo 8 caracteres"
+                  placeholder="Minimum 8 characters"
                   autoFocus
                 />
                 <button
@@ -79,7 +79,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
                   onClick={() => setShowPass(!showPass)}
                   className="absolute right-3 top-1/2 -translate-y-1/2"
                   style={{ color: 'var(--muted)' }}
-                  aria-label={showPass ? 'Ocultar senha' : 'Mostrar senha'}
+                  aria-label={showPass ? 'Hide password' : 'Show password'}
                 >
                   {showPass ? (
                     <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" stroke="currentColor" strokeWidth="2">
@@ -96,7 +96,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
             </div>
 
             <div>
-              <label className="label">Confirmar senha</label>
+              <label className="label">Confirm password</label>
               <input
                 type={showPass ? 'text' : 'password'}
                 required
@@ -104,7 +104,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 className="input"
-                placeholder="Repita a senha"
+                placeholder="Repeat password"
               />
             </div>
 
@@ -119,15 +119,15 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Salvando…
+                  Saving…
                 </span>
-              ) : 'Redefinir senha'}
+              ) : 'Reset password'}
             </button>
           </form>
         </div>
 
         <p className="text-center text-sm mt-5" style={{ color: 'var(--muted)' }}>
-          <Link href="/login" style={{ color: 'var(--accent)' }} className="hover:underline">← Voltar ao login</Link>
+          <Link href="/login" style={{ color: 'var(--accent)' }} className="hover:underline">← Back to login</Link>
         </p>
       </div>
     </div>

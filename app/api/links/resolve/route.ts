@@ -5,7 +5,7 @@ import { fetchSpotifyMetadata } from '@/lib/spotify-client-credentials'
 import { resolveViaOdesli } from '@/lib/odesli'
 
 const schema = z.object({
-  url: z.string().url('URL inválida').max(2048),
+  url: z.string().url('Invalid URL').max(2048),
 })
 
 export async function POST(req: NextRequest) {
@@ -23,12 +23,12 @@ export async function POST(req: NextRequest) {
 
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: 'URL inválida' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
   }
 
   const { url } = parsed.data
 
-  // Spotify + Odesli em paralelo para minimizar latência
+  // Spotify + Odesli in parallel to minimize latency
   const [spotifyResult, odesliResult] = await Promise.allSettled([
     fetchSpotifyMetadata(url),
     resolveViaOdesli(url),
@@ -42,19 +42,19 @@ export async function POST(req: NextRequest) {
 
   if (!meta && odesli.resolvedCount === 0) {
     return NextResponse.json(
-      { error: 'Não foi possível resolver este link. Verifique a URL e tente novamente.' },
+      { error: 'Could not resolve this link. Check the URL and try again.' },
       { status: 422 }
     )
   }
 
-  // URLs finais: Odesli como fonte primária (tem URLs nativas por plataforma)
-  // Se Odesli não retornou Spotify mas a URL original é do Spotify, usa ela
+  // Final URLs: Odesli as primary source (has native URLs per platform)
+  // If Odesli didn't return Spotify but the original URL is from Spotify, use it
   const platformUrls = { ...odesli.platformUrls }
   if (meta && !platformUrls.spotify) {
     platformUrls.spotify = url
   }
 
-  // Gera slug sugerido a partir do título
+  // Generate suggested slug from title
   const suggestedSlug = meta?.title
     ? meta.title
         .toLowerCase()

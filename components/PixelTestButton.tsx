@@ -6,11 +6,11 @@ export default function PixelTestButton({ pixelId }: { pixelId: string }) {
   const [status, setStatus] = useState<'idle' | 'sent'>('idle')
 
   function handleTest() {
-    // Carrega o pixel e dispara um evento de teste
+    // Load the pixel and fire a test event
     const fbq = (window as any).fbq
 
     if (!fbq) {
-      // Injeta o pixel base se ainda não carregado
+      // Inject the base pixel if not yet loaded
       const f = window as any
       if (!f.fbq) {
         f.fbq = function (...args: any[]) {
@@ -38,20 +38,19 @@ export default function PixelTestButton({ pixelId }: { pixelId: string }) {
   return (
     <div className="space-y-2">
       <button onClick={handleTest} className="btn-secondary text-xs">
-        {status === 'sent' ? '✓ Evento enviado' : 'Disparar evento de teste'}
+        {status === 'sent' ? '✓ Event sent' : 'Fire test event'}
       </button>
 
       {status === 'sent' && (
         <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg px-3 py-2">
           <p className="text-xs text-blue-300">
-            Evento <code className="font-mono">ViewContent</code> disparado. Para confirmar o
-            recebimento:
+            <code className="font-mono">ViewContent</code> event fired. To confirm receipt:
           </p>
           <ol className="text-xs text-blue-300/80 mt-1 ml-4 list-decimal space-y-0.5">
-            <li>Acesse o Meta Business Suite</li>
-            <li>Vá em Events Manager → seu Pixel</li>
-            <li>Clique na aba "Test Events"</li>
-            <li>Procure o evento <strong>ViewContent</strong> recente</li>
+            <li>Go to Meta Business Suite</li>
+            <li>Open Events Manager → your Pixel</li>
+            <li>Click the "Test Events" tab</li>
+            <li>Look for the recent <strong>ViewContent</strong> event</li>
           </ol>
         </div>
       )}

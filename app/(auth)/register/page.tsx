@@ -13,7 +13,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
 
   const strength = password.length === 0 ? 0 : password.length < 8 ? 1 : password.length < 12 ? 2 : 3
-  const strengthLabel = ['', 'Fraca', 'Boa', 'Forte']
+  const strengthLabel = ['', 'Weak', 'Good', 'Strong']
   const strengthColor = ['', '#ef4444', '#f59e0b', '#10b981']
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -27,7 +27,7 @@ export default function RegisterPage() {
     const pw = form.get('password') as string
     const confirm = form.get('confirm') as string
 
-    if (pw !== confirm) { setError('As senhas não coincidem.'); setLoading(false); return }
+    if (pw !== confirm) { setError('Passwords do not match.'); setLoading(false); return }
 
     const res = await fetch('/api/register', {
       method: 'POST',
@@ -36,7 +36,7 @@ export default function RegisterPage() {
     })
 
     const data = await res.json()
-    if (!res.ok) { setError(data.error ?? 'Erro ao criar conta.'); setLoading(false); return }
+    if (!res.ok) { setError(data.error ?? 'Error creating account.'); setLoading(false); return }
 
     await signIn('credentials', { email, password: pw, redirect: false })
     router.push('/dashboard')
@@ -68,21 +68,21 @@ export default function RegisterPage() {
         </div>
 
         <div className="card">
-          <h2 className="text-base font-semibold mb-5" style={{ color: 'var(--text)' }}>Criar conta</h2>
+          <h2 className="text-base font-semibold mb-5" style={{ color: 'var(--text)' }}>Create account</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="name" className="label">Nome</label>
-              <input id="name" name="name" type="text" required maxLength={80} className="input" placeholder="Seu nome" autoFocus />
+              <label htmlFor="name" className="label">Name</label>
+              <input id="name" name="name" type="text" required maxLength={80} className="input" placeholder="Your name" autoFocus />
             </div>
 
             <div>
               <label htmlFor="email" className="label">Email</label>
-              <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder="seu@email.com" />
+              <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder="you@email.com" />
             </div>
 
             <div>
-              <label htmlFor="password" className="label">Senha</label>
+              <label htmlFor="password" className="label">Password</label>
               <div className="relative">
                 <input
                   id="password"
@@ -95,14 +95,14 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="input pr-10"
-                  placeholder="Mínimo 8 caracteres"
+                  placeholder="Minimum 8 characters"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2"
                   style={{ color: 'var(--muted)' }}
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
                     <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" stroke="currentColor" strokeWidth="2">
@@ -130,8 +130,8 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="confirm" className="label">Confirmar senha</label>
-              <input id="confirm" name="confirm" type={showPassword ? 'text' : 'password'} autoComplete="new-password" required minLength={8} className="input" placeholder="Repita a senha" />
+              <label htmlFor="confirm" className="label">Confirm password</label>
+              <input id="confirm" name="confirm" type={showPassword ? 'text' : 'password'} autoComplete="new-password" required minLength={8} className="input" placeholder="Repeat password" />
             </div>
 
             {error && (
@@ -145,16 +145,16 @@ export default function RegisterPage() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Criando conta…
+                  Creating account…
                 </span>
-              ) : 'Criar conta'}
+              ) : 'Create account'}
             </button>
           </form>
         </div>
 
         <p className="text-center text-sm mt-5" style={{ color: 'var(--muted)' }}>
-          Já tem conta?{' '}
-          <Link href="/login" style={{ color: 'var(--accent)' }} className="hover:underline">Entrar</Link>
+          Already have an account?{' '}
+          <Link href="/login" style={{ color: 'var(--accent)' }} className="hover:underline">Log in</Link>
         </p>
       </div>
     </div>

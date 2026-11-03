@@ -29,7 +29,7 @@ export default async function ArtistsPage() {
         <p className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted)', letterSpacing: '0.12em' }}>Workspace</p>
         <h1 className="mt-1 text-2xl font-semibold" style={{ color: 'var(--text)' }}>Artists</h1>
         <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
-          Gerencie seus artistas, vincule pixels e smartlinks.
+          Manage your artists, link pixels and smartlinks.
         </p>
       </header>
 

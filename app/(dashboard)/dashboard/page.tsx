@@ -58,12 +58,12 @@ export default async function DashboardPage({
       {/* Alerts */}
       {searchParams.spotify === 'connected' && (
         <div className="rounded-lg px-4 py-3 text-sm" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', color: '#34d399' }}>
-          Spotify conectado com sucesso!
+          Spotify connected successfully!
         </div>
       )}
       {searchParams.spotify === 'error' && (
         <div className="rounded-lg px-4 py-3 text-sm" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}>
-          Erro ao conectar Spotify. Tente novamente.
+          Error connecting Spotify. Please try again.
         </div>
       )}
 
@@ -84,8 +84,8 @@ export default async function DashboardPage({
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatCard label="Smart Links"     value={totalLinks}  />
-        <StatCard label="Views reais"     value={totalViews}  />
-        <StatCard label="Cliques reais"   value={totalClicks} />
+        <StatCard label="Real views"     value={totalViews}  />
+        <StatCard label="Real clicks"   value={totalClicks} />
         <StatCard label="CTR médio" value={`${avgCtr}%`} accent />
       </div>
 
@@ -99,10 +99,10 @@ export default async function DashboardPage({
             </svg>
           </div>
           <div>
-            <p className="font-medium" style={{ color: 'var(--text)' }}>Nenhum smart link ainda</p>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Crie seu primeiro link e comece a rastrear.</p>
+            <p className="font-medium" style={{ color: 'var(--text)' }}>No smart links yet</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Create your first link and start tracking.</p>
           </div>
-          <Link href="/links/new" className="btn-primary mt-2">Criar primeiro link</Link>
+          <Link href="/links/new" className="btn-primary mt-2">Create first link</Link>
         </div>
       ) : (
         <div className="space-y-3">
@@ -142,7 +142,7 @@ export default async function DashboardPage({
                       <p className="text-sm truncate" style={{ color: 'var(--muted)' }}>{link.artist}</p>
                     </div>
                     <span className={link.isActive ? 'badge-success' : 'badge-muted'}>
-                      {link.isActive ? 'Ativo' : 'Inativo'}
+                      {link.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </div>
 
@@ -166,18 +166,18 @@ export default async function DashboardPage({
                   {/* Stats + Actions */}
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
                     <span className="font-mono text-xs" style={{ color: 'var(--muted)' }}>
-                      {views.toLocaleString('pt-BR')} views · {realClicks.toLocaleString('pt-BR')} cliques
+                      {views.toLocaleString('en-US')} views · {realClicks.toLocaleString('en-US')} clicks
                     </span>
                     <div className="flex items-center gap-1.5 ml-auto flex-wrap">
                       <Link href={`/links/${link.id}`} className="btn-ghost text-xs px-2.5 py-1.5">
                         Stats
                       </Link>
                       <Link href={`/links/${link.id}/edit`} className="btn-secondary text-xs px-2.5 py-1.5">
-                        Editar
+                        Edit
                       </Link>
                       <form action={toggleLinkActive.bind(null, link.id, !link.isActive)}>
                         <button type="submit" className="btn-ghost text-xs px-2.5 py-1.5">
-                          {link.isActive ? 'Desativar' : 'Ativar'}
+                          {link.isActive ? 'Deactivate' : 'Activate'}
                         </button>
                       </form>
                       <DeleteLinkButton id={link.id} />
@@ -200,7 +200,7 @@ function StatCard({ label, value, accent = false }: { label: string; value: numb
         className="text-2xl font-bold font-mono"
         style={{ color: accent ? 'var(--accent)' : 'var(--text)' }}
       >
-        {typeof value === 'number' ? value.toLocaleString('pt-BR') : value}
+        {typeof value === 'number' ? value.toLocaleString('en-US') : value}
       </p>
       <p className="text-xs mt-1.5" style={{ color: 'var(--muted)' }}>{label}</p>
     </div>

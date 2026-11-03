@@ -59,7 +59,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               }}
             >
               <button type="submit" className="btn-ghost text-xs px-3 py-1.5">
-                Sair
+                Sign out
               </button>
             </form>
           </div>

@@ -251,7 +251,7 @@ export default async function LinkStatsPage({
             ))}
           </div>
         </div>
-        <Link href={`/links/${link.id}/edit`} className="btn-secondary text-xs">Editar</Link>
+        <Link href={`/links/${link.id}/edit`} className="btn-secondary text-xs">Edit</Link>
       </div>
 
       {link.metaPixelId && (
@@ -279,7 +279,7 @@ export default async function LinkStatsPage({
       </section>
       {period === '28d' && (
         <p className="text-xs text-muted">
-          Este relatório mostra até 28 dias. Limites de analytics por plano dependem da integração de billing, ainda não configurada.
+          This report shows up to 28 days. Analytics limits per plan depend on billing integration, which is not yet configured.
         </p>
       )}
 
@@ -329,17 +329,17 @@ export default async function LinkStatsPage({
       </section>
 
       <div className="card space-y-3">
-        <h2 className="font-semibold">Visitantes recentes</h2>
+        <h2 className="font-semibold">Recent visitors</h2>
         {visitors.length ? (
           <VisitorsTable visitors={visitors.map((visitor) => ({
             ...visitor,
             createdAt: visitor.createdAt.toISOString(),
           }))} />
         ) : (
-          <p className="text-sm text-muted">Nenhum visitante no período selecionado.</p>
+          <p className="text-sm text-muted">No visitors in the selected period.</p>
         )}
       </div>
-      <p className="text-[11px] text-muted">Timezone: {timezone}. Consent mostra eventos aprovados e com consentimento explícito; Total inclui todo o tráfego não filtrado.</p>
+      <p className="text-[11px] text-muted">Timezone: {timezone}. Consent shows approved events with explicit consent; Total includes all unfiltered traffic.</p>
     </div>
   )
 }
@@ -373,7 +373,7 @@ function FilterLink({
 function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="card">
-      <p className="text-2xl font-bold">{typeof value === 'number' ? value.toLocaleString('pt-BR') : value}</p>
+      <p className="text-2xl font-bold">{typeof value === 'number' ? value.toLocaleString('en-US') : value}</p>
       <p className="text-xs text-muted mt-1">{label}</p>
     </div>
   )

@@ -34,9 +34,9 @@ export default function VisitorsTable({ visitors }: VisitorsTableProps) {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-muted text-xs border-b border-border">
-              <th className="text-left py-2 font-medium">Data</th>
-              <th className="text-left py-2 font-medium">País</th>
-              <th className="text-left py-2 font-medium">Cidade</th>
+              <th className="text-left py-2 font-medium">Date</th>
+              <th className="text-left py-2 font-medium">Country</th>
+              <th className="text-left py-2 font-medium">City</th>
               <th className="text-left py-2 font-medium">Device</th>
               <th className="text-left py-2 font-medium">Browser</th>
               <th className="text-left py-2 font-medium">Consent</th>
@@ -47,7 +47,7 @@ export default function VisitorsTable({ visitors }: VisitorsTableProps) {
             {visitors.map((v) => (
               <tr key={v.id} className="border-b border-border/50 hover:bg-card/50 transition-colors">
                 <td className="py-2 text-muted">
-                  {new Date(v.createdAt).toLocaleString('pt-BR', {
+                  {new Date(v.createdAt).toLocaleString('en-US', {
                     day: '2-digit',
                     month: '2-digit',
                     hour: '2-digit',
@@ -64,7 +64,7 @@ export default function VisitorsTable({ visitors }: VisitorsTableProps) {
                     onClick={() => setActiveVisitorId(v.id)}
                     className="text-xs px-2 py-1 rounded border border-green-500/30 text-green-400 hover:bg-green-500/10 transition-colors font-mono"
                   >
-                    ver →
+                    view →
                   </button>
                 </td>
               </tr>

@@ -20,29 +20,29 @@ const customizationSchema = z.object({
 
 const platformSchema = z.object({
   name: z.enum(['spotify', 'apple_music', 'youtube_music', 'deezer']),
-  url: z.string().url('URL inválida').max(2048),
-  deeplinkUrl: z.string().url('Deeplink inválido').max(2048).optional().or(z.literal('')),
+  url: z.string().url('Invalid URL').max(2048),
+  deeplinkUrl: z.string().url('Invalid deeplink').max(2048).optional().or(z.literal('')),
   order: z.number().int().min(0).max(10),
   isActive: z.boolean(),
 })
 
 const linkSchema = z.object({
-  title: z.string().min(1, 'Título obrigatório').max(100).trim(),
+  title: z.string().min(1, 'Title is required').max(100).trim(),
   artist: z.string().max(100).trim().optional().or(z.literal('')),
   slug: z
     .string()
-    .min(1, 'Slug obrigatório')
+    .min(1, 'Slug is required')
     .max(50)
-    .regex(SLUG_REGEX, 'Slug: apenas letras minúsculas, números e hífens'),
-  coverUrl: z.string().url('URL inválida').max(2048).optional().or(z.literal('')),
+    .regex(SLUG_REGEX, 'Slug: lowercase letters, numbers and hyphens only'),
+  coverUrl: z.string().url('Invalid URL').max(2048).optional().or(z.literal('')),
   theme: z.enum(VALID_THEMES).default('dark-navy'),
   spotifyArtistId: z.string().regex(/^[A-Za-z0-9]{22}$/).optional().or(z.literal('')),
   spotifyArtistName: z.string().max(100).optional().or(z.literal('')),
   spotifyPlaylistId: z.string().regex(/^[A-Za-z0-9]{22}$/).optional().or(z.literal('')),
   pixelIds: z.array(z.string().cuid()).max(20),
   artistIds: z.array(z.string().cuid()).max(50),
-  platforms: z.array(platformSchema).min(1, 'Adicione ao menos um destino de streaming')
-    .refine((platforms) => platforms.some((platform) => platform.isActive), 'Ative ao menos uma plataforma'),
+  platforms: z.array(platformSchema).min(1, 'Add at least one streaming destination')
+    .refine((platforms) => platforms.some((platform) => platform.isActive), 'Enable at least one platform'),
   customization: customizationSchema,
 })
 
@@ -112,16 +112,16 @@ export async function createLink(
     })
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-      return { error: { formErrors: ['Esse slug já está em uso.'], fieldErrors: {} } }
+      return { error: { formErrors: ['This slug is already in use.'], fieldErrors: {} } }
     }
     if (e instanceof Error && e.message === 'INVALID_PIXEL_ASSIGNMENT') {
-      return { error: { formErrors: ['Um dos pixels selecionados não pertence a esta conta.'], fieldErrors: {} } }
+      return { error: { formErrors: ['One of the selected pixels does not belong to this account.'], fieldErrors: {} } }
     }
     if (e instanceof Error && e.message === 'INVALID_ARTIST_ASSIGNMENT') {
-      return { error: { formErrors: ['Um dos artistas selecionados não pertence a esta conta.'], fieldErrors: {} } }
+      return { error: { formErrors: ['One of the selected artists does not belong to this account.'], fieldErrors: {} } }
     }
     console.error('[createLink]', e)
-    return { error: { formErrors: ['Erro interno. Tente novamente.'], fieldErrors: {} } }
+    return { error: { formErrors: ['Internal error. Please try again.'], fieldErrors: {} } }
   }
 
   revalidatePath('/dashboard')
@@ -141,7 +141,7 @@ export async function updateLink(
   })
 
   if (!link || link.userId !== userId) {
-    return { error: { formErrors: ['Link não encontrado.'], fieldErrors: {} } }
+    return { error: { formErrors: ['Link not found.'], fieldErrors: {} } }
   }
 
   const raw = extractLinkFromForm(formData)
@@ -196,16 +196,16 @@ export async function updateLink(
     })
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-      return { error: { formErrors: ['Esse slug já está em uso.'], fieldErrors: {} } }
+      return { error: { formErrors: ['This slug is already in use.'], fieldErrors: {} } }
     }
     if (e instanceof Error && e.message === 'INVALID_PIXEL_ASSIGNMENT') {
-      return { error: { formErrors: ['Um dos pixels selecionados não pertence a esta conta.'], fieldErrors: {} } }
+      return { error: { formErrors: ['One of the selected pixels does not belong to this account.'], fieldErrors: {} } }
     }
     if (e instanceof Error && e.message === 'INVALID_ARTIST_ASSIGNMENT') {
-      return { error: { formErrors: ['Um dos artistas selecionados não pertence a esta conta.'], fieldErrors: {} } }
+      return { error: { formErrors: ['One of the selected artists does not belong to this account.'], fieldErrors: {} } }
     }
     console.error('[updateLink]', e)
-    return { error: { formErrors: ['Erro interno. Tente novamente.'], fieldErrors: {} } }
+    return { error: { formErrors: ['Internal error. Please try again.'], fieldErrors: {} } }
   }
 
   revalidatePath('/dashboard')

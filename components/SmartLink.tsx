@@ -187,7 +187,7 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
       localStorage.setItem(CONSENT_STORAGE_KEY, status)
     } catch (err) {
       console.error('[consent] browser storage unavailable:', err)
-      setConsentError('Não foi possível salvar a preferência neste navegador.')
+      setConsentError('Could not save preference in this browser.')
     }
 
     const visitorId = visitorIdRef.current
@@ -197,7 +197,7 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
       await persistConsent(status, visitorId, viewClickIdRef.current ?? undefined)
     } catch (err) {
       console.error('[consent] save failed:', err)
-      setConsentError('Não foi possível salvar sua preferência. Tente novamente.')
+      setConsentError('Could not save your preference. Please try again.')
     }
   }
 
@@ -273,7 +273,7 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
             />
           </svg>
           <span className="text-xs font-medium" style={{ color: '#10b981' }}>
-            Verificado · tráfego real
+            Verified · real traffic
           </span>
         </div>
       )}
@@ -315,12 +315,12 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
           className="w-full mt-3 text-xs underline underline-offset-2 text-center"
           style={{ color: '#8888aa' }}
         >
-          Reativar rastreamento de análise
+          Re-enable analytics tracking
         </button>
       ) : (
         <div className="mt-4 flex items-center justify-between gap-2 px-1">
           <p className="text-xs" style={{ color: '#8888aa' }}>
-            Este link usa análise para medir campanhas.
+            This link uses analytics to measure campaigns.
           </p>
           <button
             type="button"
@@ -328,7 +328,7 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
             className="text-xs whitespace-nowrap underline underline-offset-2 flex-shrink-0"
             style={{ color: '#8888aa' }}
           >
-            Recusar
+            Decline
           </button>
         </div>
       )}
@@ -343,7 +343,7 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
           <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none">
             <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Spotify conectado
+          Spotify connected
         </div>
       )}
     </div>
@@ -430,22 +430,22 @@ const DeezerIcon = (
 
 const PLATFORM_CONFIG: Record<string, { label: string; iconBg: string; icon: React.ReactNode }> = {
   spotify: {
-    label: 'Ouvir no Spotify',
+    label: 'Listen on Spotify',
     iconBg: '#1DB954',
     icon: SpotifyIcon,
   },
   apple_music: {
-    label: 'Ouvir na Apple Music',
+    label: 'Listen on Apple Music',
     iconBg: 'linear-gradient(135deg, #fc3c44, #f9148b)',
     icon: AppleIcon,
   },
   youtube_music: {
-    label: 'Ouvir no YouTube Music',
+    label: 'Listen on YouTube Music',
     iconBg: '#FF0000',
     icon: YouTubeIcon,
   },
   deezer: {
-    label: 'Ouvir no Deezer',
+    label: 'Listen on Deezer',
     iconBg: 'linear-gradient(135deg, #A238FF, #7B2BCC)',
     icon: DeezerIcon,
   },

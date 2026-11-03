@@ -30,9 +30,9 @@ export default function ArtistList({ artists }: { artists: Artist[] }) {
               <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" strokeWidth="1.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <p className="font-medium" style={{ color: 'var(--text)' }}>Nenhum artista cadastrado</p>
+          <p className="font-medium" style={{ color: 'var(--text)' }}>No artists added yet</p>
           <p className="text-sm" style={{ color: 'var(--muted)' }}>
-            Adicione artistas para organizar seus smartlinks e pixels por artista.
+            Add artists to organize your smartlinks and pixels by artist.
           </p>
         </div>
       ) : (
@@ -63,7 +63,7 @@ function CreateArtistForm() {
 
   return (
     <section className="card space-y-4">
-      <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Adicionar Artista</h2>
+      <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Add Artist</h2>
 
       {state?.error && (
         <p className="text-sm rounded-lg px-3 py-2" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
@@ -73,8 +73,8 @@ function CreateArtistForm() {
 
       <form action={action} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
         <div>
-          <label className="label">Nome do artista *</label>
-          <input name="name" required maxLength={100} className="input" placeholder="Nome Artístico" />
+          <label className="label">Artist name *</label>
+          <input name="name" required maxLength={100} className="input" placeholder="Stage Name" />
         </div>
         <div>
           <label className="label">Spotify Artist ID</label>
@@ -96,7 +96,7 @@ function ArtistSubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus()
   return (
     <button type="submit" disabled={pending} className="btn-primary self-end">
-      {pending ? 'Salvando…' : label}
+      {pending ? 'Saving…' : label}
     </button>
   )
 }
@@ -132,19 +132,19 @@ function ArtistCard({ artist, onEdit }: { artist: Artist; onEdit: () => void }) 
         </div>
 
         <div className="flex items-center gap-2">
-          <button onClick={onEdit} className="btn-secondary text-xs">Editar</button>
+          <button onClick={onEdit} className="btn-secondary text-xs">Edit</button>
           <form action={deleteArtist}>
             <input type="hidden" name="id" value={artist.id} />
             <button
               type="submit"
               className="btn-danger text-xs"
               onClick={(e) => {
-                if (!confirm(`Remover "${artist.name}"? Os smartlinks associados continuarão existindo.`)) {
+                if (!confirm(`Remove "${artist.name}"? Associated smartlinks will continue to exist.`)) {
                   e.preventDefault()
                 }
               }}
             >
-              Remover
+              Remove
             </button>
           </form>
         </div>
@@ -164,7 +164,7 @@ function ArtistCard({ artist, onEdit }: { artist: Artist; onEdit: () => void }) 
           </a>
         ))}
         {!artist.pixels.length && !artist.links.length && (
-          <span className="text-xs" style={{ color: 'var(--muted)' }}>Sem pixels ou smartlinks associados</span>
+          <span className="text-xs" style={{ color: 'var(--muted)' }}>No pixels or smartlinks associated</span>
         )}
       </div>
     </article>
@@ -178,8 +178,8 @@ function EditArtistForm({ artist, onClose }: { artist: Artist; onClose: () => vo
   return (
     <article className="card space-y-4" style={{ border: '1px solid var(--accent-glow)' }}>
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Editar: {artist.name}</h2>
-        <button onClick={onClose} className="btn-ghost text-xs">Cancelar</button>
+        <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Edit: {artist.name}</h2>
+        <button onClick={onClose} className="btn-ghost text-xs">Cancel</button>
       </div>
 
       {state?.error && (
@@ -190,7 +190,7 @@ function EditArtistForm({ artist, onClose }: { artist: Artist; onClose: () => vo
 
       <form action={action} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
         <div>
-          <label className="label">Nome do artista *</label>
+          <label className="label">Artist name *</label>
           <input name="name" required maxLength={100} defaultValue={artist.name} className="input" />
         </div>
         <div>
@@ -205,7 +205,7 @@ function EditArtistForm({ artist, onClose }: { artist: Artist; onClose: () => vo
           />
         </div>
         <div>
-          <label className="label">Foto (URL)</label>
+          <label className="label">Photo (URL)</label>
           <input
             name="imageUrl"
             type="url"
@@ -215,7 +215,7 @@ function EditArtistForm({ artist, onClose }: { artist: Artist; onClose: () => vo
             placeholder="https://i.scdn.co/…"
           />
         </div>
-        <ArtistSubmitButton label="Guardar" />
+        <ArtistSubmitButton label="Save" />
       </form>
     </article>
   )

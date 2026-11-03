@@ -8,7 +8,7 @@ const schema = z.object({
   url: z.string().url(),
 })
 
-// Extrai tipo e ID de qualquer URL do Spotify
+// Extract type and ID from any Spotify URL
 function parseSpotifyUrl(url: string): { type: 'track' | 'album' | 'playlist'; id: string } | null {
   const match = url.match(/spotify\.com\/(track|album|playlist)\/([A-Za-z0-9]+)/)
   if (!match) return null
@@ -21,15 +21,15 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => null)
   const parsed = schema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: 'URL inválida' }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
 
   const item = parseSpotifyUrl(parsed.data.url)
-  if (!item) return NextResponse.json({ error: 'URL do Spotify inválida. Use uma URL de faixa, álbum ou playlist.' }, { status: 400 })
+  if (!item) return NextResponse.json({ error: 'Invalid Spotify URL. Use a track, album or playlist URL.' }, { status: 400 })
 
   const token = await getValidSpotifyToken(session.user.id)
   if (!token) {
     return NextResponse.json(
-      { error: 'Spotify não conectado', needsAuth: true },
+      { error: 'Spotify not connected', needsAuth: true },
       { status: 403 }
     )
   }
@@ -41,12 +41,12 @@ export async function POST(req: NextRequest) {
   })
 
   if (!spotifyRes.ok) {
-    return NextResponse.json({ error: 'Não foi possível buscar dados do Spotify' }, { status: 502 })
+    return NextResponse.json({ error: 'Could not fetch data from Spotify' }, { status: 502 })
   }
 
   const data = await spotifyRes.json()
 
-  // Normaliza a resposta para track / album / playlist
+  // Normalize the response for track / album / playlist
   let title: string
   let artist: string | null
   let coverUrl: string | null

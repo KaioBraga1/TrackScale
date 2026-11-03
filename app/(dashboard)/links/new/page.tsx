@@ -35,7 +35,7 @@ export default async function NewLinkPage() {
           ← Dashboard
         </Link>
         <span className="text-border">/</span>
-        <h1 className="text-xl font-semibold">Novo Smart Link</h1>
+        <h1 className="text-xl font-semibold">New Smart Link</h1>
       </div>
 
       <ResolveLinkFlow

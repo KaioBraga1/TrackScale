@@ -57,32 +57,32 @@ const PLATFORMS = [
 
 const THEMES = [
   { id: 'dark-navy',   label: 'Navy',    bg: '#0b0b18', card: '#14142a', border: '#20203a', ring: '#4040a0' },
-  { id: 'dark-purple', label: 'Roxo',    bg: '#0d0616', card: '#180e2a', border: '#261840', ring: '#7040a0' },
-  { id: 'midnight',    label: 'Preto',   bg: '#070709', card: '#111116', border: '#1c1c24', ring: '#505050' },
-  { id: 'forest',      label: 'Floresta',bg: '#050e06', card: '#0c1a0d', border: '#14281a', ring: '#205020' },
-  { id: 'ocean',       label: 'Oceano',  bg: '#030c17', card: '#081524', border: '#0f2236', ring: '#205080' },
-  { id: 'crimson',     label: 'Vinho',   bg: '#0e0408', card: '#1a080d', border: '#2a1018', ring: '#802040' },
+  { id: 'dark-purple', label: 'Purple',   bg: '#0d0616', card: '#180e2a', border: '#261840', ring: '#7040a0' },
+  { id: 'midnight',    label: 'Black',    bg: '#070709', card: '#111116', border: '#1c1c24', ring: '#505050' },
+  { id: 'forest',      label: 'Forest',   bg: '#050e06', card: '#0c1a0d', border: '#14281a', ring: '#205020' },
+  { id: 'ocean',       label: 'Ocean',    bg: '#030c17', card: '#081524', border: '#0f2236', ring: '#205080' },
+  { id: 'crimson',     label: 'Wine',     bg: '#0e0408', card: '#1a080d', border: '#2a1018', ring: '#802040' },
 ]
 
 const ACCENT_PRESETS = [
-  { color: '#7c3aed', label: 'Roxo' },
-  { color: '#2563eb', label: 'Azul' },
-  { color: '#059669', label: 'Verde' },
-  { color: '#dc2626', label: 'Vermelho' },
-  { color: '#d97706', label: 'Laranja' },
-  { color: '#db2777', label: 'Rosa' },
+  { color: '#7c3aed', label: 'Purple' },
+  { color: '#2563eb', label: 'Blue' },
+  { color: '#059669', label: 'Green' },
+  { color: '#dc2626', label: 'Red' },
+  { color: '#d97706', label: 'Orange' },
+  { color: '#db2777', label: 'Pink' },
 ]
 
 const BUTTON_STYLES = [
-  { id: 'rounded', label: 'Arredondado' },
+  { id: 'rounded', label: 'Rounded' },
   { id: 'pill',    label: 'Pill' },
-  { id: 'square',  label: 'Quadrado' },
+  { id: 'square',  label: 'Square' },
 ] as const
 
 const COVER_SIZES = [
-  { id: 'lg',     label: 'Grande' },
-  { id: 'sm',     label: 'Pequena' },
-  { id: 'hidden', label: 'Ocultar' },
+  { id: 'lg',     label: 'Large' },
+  { id: 'sm',     label: 'Small' },
+  { id: 'hidden', label: 'Hidden' },
 ] as const
 
 export default function LinkForm({
@@ -154,7 +154,7 @@ export default function LinkForm({
       })
       const data = await res.json()
       if (!res.ok) {
-        setImportError(data.needsAuth ? 'Conecte o Spotify primeiro em Configurações.' : (data.error ?? 'Erro ao importar.'))
+        setImportError(data.needsAuth ? 'Connect Spotify first in Settings.' : (data.error ?? 'Import error.'))
         return
       }
       if (data.title)    setTitle(data.title)
@@ -180,7 +180,7 @@ export default function LinkForm({
         )
       }
     } catch {
-      setImportError('Falha de rede. Tente novamente.')
+      setImportError('Network error. Please try again.')
     } finally {
       setImporting(false)
     }
@@ -241,14 +241,14 @@ export default function LinkForm({
         <section className="card space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">🎧</span>
-            <h2 className="font-semibold text-white">Importar do Spotify</h2>
+            <h2 className="font-semibold text-white">Import from Spotify</h2>
             {!hasSpotify && (
               <a href="/settings" className="ml-auto text-xs text-accent hover:underline">
-                Conectar Spotify →
+                Connect Spotify →
               </a>
             )}
           </div>
-          <p className="text-xs text-muted">Cole a URL de uma faixa, álbum ou playlist para preencher nome e capa automaticamente.</p>
+          <p className="text-xs text-muted">Paste a track, album or playlist URL to fill name and cover automatically.</p>
           <div className="flex gap-2">
             <input
               type="url"
@@ -264,7 +264,7 @@ export default function LinkForm({
               disabled={!hasSpotify || importing || !spotifyImportUrl.trim()}
               className="btn-secondary whitespace-nowrap"
             >
-              {importing ? 'Buscando…' : 'Importar'}
+              {importing ? 'Searching…' : 'Import'}
             </button>
           </div>
           {importError && <p className="text-xs text-red-400">{importError}</p>}
@@ -272,21 +272,21 @@ export default function LinkForm({
             <div className="flex items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={importedCover} alt="capa" className="w-12 h-12 rounded-lg object-cover" />
-              <span className="text-xs text-green-400">✓ Dados importados do Spotify</span>
+              <span className="text-xs text-green-400">✓ Data imported from Spotify</span>
             </div>
           )}
         </section>
 
         {/* Dados do link */}
         <section className="card space-y-4">
-          <h2 className="font-semibold text-white">Dados do link</h2>
+          <h2 className="font-semibold text-white">Link details</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="label" htmlFor="title">Título *</label>
+              <label className="label" htmlFor="title">Title *</label>
               <input
                 id="title" name="title" type="text" required maxLength={100}
                 value={title} onChange={(e) => setTitle(e.target.value)}
-                className="input" placeholder="Nome da música ou playlist"
+                className="input" placeholder="Track or playlist name"
               />
               {fieldError('title') && <p className="field-error">{fieldError('title')}</p>}
             </div>
@@ -296,17 +296,17 @@ export default function LinkForm({
               </div>
             )}
             <div>
-              <label className="label" htmlFor="artist">Artista / Label</label>
+              <label className="label" htmlFor="artist">Artist / Label</label>
               <input
                 id="artist" name="artist" type="text" maxLength={100}
                 value={artist} onChange={(e) => setArtist(e.target.value)}
-                className="input" placeholder="Nome do artista ou gravadora"
+                className="input" placeholder="Artist or label name"
               />
             </div>
           </div>
 
           <div>
-            <label className="label" htmlFor="slug">Link público *</label>
+            <label className="label" htmlFor="slug">Public URL *</label>
             <div className="flex items-center gap-2">
               <span className="text-muted text-xs whitespace-nowrap">trackscale.app/l/</span>
               <input
@@ -319,7 +319,7 @@ export default function LinkForm({
           </div>
 
           <div>
-            <label className="label" htmlFor="coverUrl">URL da capa</label>
+            <label className="label" htmlFor="coverUrl">Cover URL</label>
             <input
               id="coverUrl" name="coverUrl" type="url" maxLength={2048}
               value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)}
@@ -331,8 +331,8 @@ export default function LinkForm({
         {/* Tema */}
         <section className="card space-y-4">
           <div>
-            <h2 className="font-semibold text-white">Tema</h2>
-            <p className="text-xs text-muted mt-1">Fundo que o visitante vai ver ao abrir o link.</p>
+            <h2 className="font-semibold text-white">Theme</h2>
+            <p className="text-xs text-muted mt-1">Background the visitor sees when opening the link.</p>
           </div>
           <input type="hidden" name="theme" value={theme} />
           <div className="flex flex-wrap gap-3">
@@ -358,13 +358,13 @@ export default function LinkForm({
         {/* Aparência */}
         <section className="card space-y-5">
           <div>
-            <h2 className="font-semibold text-white">Aparência</h2>
-            <p className="text-xs text-muted mt-1">Cor de destaque, botões e detalhes visuais.</p>
+            <h2 className="font-semibold text-white">Appearance</h2>
+            <p className="text-xs text-muted mt-1">Accent color, buttons and visual details.</p>
           </div>
 
           {/* Accent color */}
           <div className="space-y-2">
-            <p className="label">Cor de destaque</p>
+            <p className="label">Accent color</p>
             <div className="flex items-center gap-2 flex-wrap">
               {ACCENT_PRESETS.map((preset) => (
                 <button
@@ -384,7 +384,7 @@ export default function LinkForm({
               ))}
               <label
                 className="w-8 h-8 rounded-full overflow-hidden cursor-pointer transition-all"
-                title="Cor personalizada"
+                title="Custom color"
                 style={{
                   outline: customAccent ? `3px solid ${accentColor}` : '3px solid transparent',
                   outlineOffset: '2px',
@@ -403,7 +403,7 @@ export default function LinkForm({
 
           {/* Button style */}
           <div className="space-y-2">
-            <p className="label">Estilo dos botões</p>
+            <p className="label">Button style</p>
             <div className="flex gap-2">
               {BUTTON_STYLES.map((style) => {
                 const radius = style.id === 'pill' ? 24 : style.id === 'rounded' ? 10 : 4
@@ -437,7 +437,7 @@ export default function LinkForm({
 
           {/* Cover size */}
           <div className="space-y-2">
-            <p className="label">Tamanho da capa</p>
+            <p className="label">Cover size</p>
             <div className="flex gap-2">
               {COVER_SIZES.map((size) => (
                 <button
@@ -460,8 +460,8 @@ export default function LinkForm({
           {/* Background style */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-white">Fundo com blur da capa</p>
-              <p className="text-xs text-muted mt-0.5">Usa a imagem do álbum como fundo com efeito glass</p>
+              <p className="text-sm text-white">Album cover blur background</p>
+              <p className="text-xs text-muted mt-0.5">Uses the album image as background with glass effect</p>
             </div>
             <button
               type="button"
@@ -481,8 +481,8 @@ export default function LinkForm({
           {/* Show verified badge */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-white">Badge de verificação</p>
-              <p className="text-xs text-muted mt-0.5">Mostrar badge &quot;tráfego real&quot; quando verificado</p>
+              <p className="text-sm text-white">Verification badge</p>
+              <p className="text-xs text-muted mt-0.5">Show &quot;real traffic&quot; badge when verified</p>
             </div>
             <button
               type="button"
@@ -502,7 +502,7 @@ export default function LinkForm({
           {/* Bio text */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="label" htmlFor="bioText">Bio / Descrição</label>
+              <label className="label" htmlFor="bioText">Bio / Description</label>
               <span className="text-xs text-muted">{bioText.length}/120</span>
             </div>
             <textarea
@@ -511,7 +511,7 @@ export default function LinkForm({
               onChange={(e) => setBioText(e.target.value.slice(0, 120))}
               className="input resize-none"
               rows={2}
-              placeholder="Texto exibido abaixo do nome do artista (opcional)"
+              placeholder="Text shown below the artist name (optional)"
               maxLength={120}
             />
           </div>
@@ -520,8 +520,8 @@ export default function LinkForm({
         {/* Destinos de streaming */}
         <section className="card space-y-4">
           <div>
-            <h2 className="font-semibold text-white">Links de destino</h2>
-            <p className="text-xs text-muted mt-1">Para onde o usuário vai ao clicar. Preencha ao menos um.</p>
+            <h2 className="font-semibold text-white">Destination links</h2>
+            <p className="text-xs text-muted mt-1">Where the user goes when they click. Fill in at least one.</p>
           </div>
           {platforms.map((platform, index) => (
             <div
@@ -537,7 +537,7 @@ export default function LinkForm({
               className={`rounded-lg border border-border p-3 space-y-2 ${draggingPlatform === platform.name ? 'opacity-50' : ''}`}
             >
               <div className="flex items-center gap-2">
-                <button type="button" aria-label={`Drag ${platform.label} to reorder`} title="Arraste para reordenar" className="cursor-grab px-2 text-muted active:cursor-grabbing">⠿</button>
+                <button type="button" aria-label={`Drag ${platform.label} to reorder`} title="Drag to reorder" className="cursor-grab px-2 text-muted active:cursor-grabbing">⠿</button>
                 <span className="flex-1 text-sm font-medium">{platform.label}</span>
                 <button type="button" className="btn-ghost text-xs" disabled={index === 0} onClick={() => movePlatform(platform.name, platforms[index - 1]?.name)} aria-label={`Move ${platform.label} up`}>↑</button>
                 <button type="button" className="btn-ghost text-xs" disabled={index === platforms.length - 1} onClick={() => movePlatform(platform.name, platforms[index + 1]?.name)} aria-label={`Move ${platform.label} down`}>↓</button>
@@ -549,7 +549,7 @@ export default function LinkForm({
                       item.name === platform.name ? { ...item, isActive: event.target.checked } : item
                     ))}
                   />
-                  Ativo
+                  Active
                 </label>
               </div>
               <label className="sr-only" htmlFor={platform.name}>{platform.label} URL</label>
@@ -570,7 +570,7 @@ export default function LinkForm({
                   item.name === platform.name ? { ...item, deeplinkUrl: event.target.value } : item
                 ))}
                 className="input text-xs"
-                placeholder="Deeplink direto (opcional)"
+                placeholder="Direct deeplink (optional)"
                 aria-label={`${platform.label} deeplink`}
               />
             </div>
@@ -614,13 +614,13 @@ export default function LinkForm({
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted">Nenhum pixel cadastrado. <Link href="/tracking" className="text-accent hover:underline">Adicionar em Tracking</Link></p>
+            <p className="text-sm text-muted">No pixels added. <Link href="/tracking" className="text-accent hover:underline">Add in Tracking</Link></p>
           )}
-          <Link href="/tracking" className="text-xs text-accent hover:underline">Gerenciar pixels →</Link>
+          <Link href="/tracking" className="text-xs text-accent hover:underline">Manage pixels →</Link>
         </section>
 
         <div className="flex items-center justify-between gap-3">
-          <Link href="/dashboard" className="btn-ghost">Descartar rascunho</Link>
+          <Link href="/dashboard" className="btn-ghost">Discard draft</Link>
           <SubmitButton label={submitLabel} />
         </div>
       </form>
@@ -684,7 +684,7 @@ export default function LinkForm({
               <div style={{ width: 100, height: 4, backgroundColor: '#333', borderRadius: 2 }} />
             </div>
           </div>
-          <p className="text-xs text-muted text-center mt-3">Atualiza em tempo real</p>
+          <p className="text-xs text-muted text-center mt-3">Updates in real time</p>
         </div>
       </div>
     </div>
@@ -695,7 +695,7 @@ function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus()
   return (
     <button type="submit" disabled={pending} className="btn-primary">
-      {pending ? 'Salvando…' : label}
+      {pending ? 'Saving…' : label}
     </button>
   )
 }

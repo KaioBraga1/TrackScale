@@ -61,7 +61,7 @@ export default function ResolveLinkFlow({ action, hasSpotify, pixels, artists }:
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error ?? 'Não foi possível resolver este link.')
+        setError(data.error ?? 'Could not resolve this link.')
         setStep('url')
         return
       }
@@ -84,7 +84,7 @@ export default function ResolveLinkFlow({ action, hasSpotify, pixels, artists }:
         setStep('form')
       }, PLATFORM_ORDER.length * 250 + 400)
     } catch {
-      setError('Falha de rede. Tente novamente.')
+      setError('Network error. Please try again.')
       setStep('url')
     }
   }
@@ -113,7 +113,7 @@ export default function ResolveLinkFlow({ action, hasSpotify, pixels, artists }:
         )}
         <LinkForm
           action={action}
-          submitLabel="Salvar e publicar"
+          submitLabel="Save and publish"
           hasSpotify={hasSpotify}
           pixels={pixels}
           artists={artists}
@@ -136,8 +136,8 @@ export default function ResolveLinkFlow({ action, hasSpotify, pixels, artists }:
     return (
       <div className="card max-w-md mx-auto space-y-6 py-10">
         <div className="text-center space-y-1">
-          <p className="text-white font-semibold">Resolvendo link…</p>
-          <p className="text-muted text-sm">Buscando em todas as plataformas</p>
+          <p className="text-white font-semibold">Resolving link…</p>
+          <p className="text-muted text-sm">Searching across all platforms</p>
         </div>
 
         <div className="space-y-3">
@@ -191,9 +191,9 @@ export default function ResolveLinkFlow({ action, hasSpotify, pixels, artists }:
   return (
     <div className="card max-w-md mx-auto space-y-6">
       <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-white">Cole o link da música</h2>
+        <h2 className="text-lg font-semibold text-white">Paste the music link</h2>
         <p className="text-sm text-muted">
-          Spotify, Apple Music, YouTube Music ou Deezer — resolve automaticamente em todas as plataformas.
+          Spotify, Apple Music, YouTube Music or Deezer — automatically resolves across all platforms.
         </p>
       </div>
 
@@ -220,7 +220,7 @@ export default function ResolveLinkFlow({ action, hasSpotify, pixels, artists }:
           disabled={!url.trim()}
           className="btn-primary w-full"
         >
-          Resolver link
+          Resolve link
         </button>
       </div>
 
@@ -230,7 +230,7 @@ export default function ResolveLinkFlow({ action, hasSpotify, pixels, artists }:
           onClick={() => setStep('form')}
           className="btn-ghost w-full text-sm"
         >
-          Preencher manualmente →
+          Fill in manually →
         </button>
       </div>
     </div>

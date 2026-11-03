@@ -112,7 +112,7 @@ export default function AnalyticsVisualizations({
             </svg>
           </div>
         ) : (
-          <p className="py-8 text-center text-sm text-muted">Sem dados para este período.</p>
+          <p className="py-8 text-center text-sm text-muted">No data for this period.</p>
         )}
       </section>
 
@@ -129,14 +129,14 @@ export default function AnalyticsVisualizations({
               <span className="w-20 text-right text-xs text-muted">{item.count} · {percent}%</span>
             </div>
           )
-        }) : <p className="text-sm text-muted">Sem cliques de plataforma.</p>}
+        }) : <p className="text-sm text-muted">No platform clicks.</p>}
       </section>
 
       <section className="card space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold">Geographic Breakdown</h2>
-            <p className="text-xs text-muted">{countries.length} países resolvidos</p>
+            <p className="text-xs text-muted">{countries.length} countries resolved</p>
           </div>
           <button
             type="button"
@@ -144,7 +144,7 @@ export default function AnalyticsVisualizations({
             aria-label="Expand country breakdown"
             onClick={() => setCountryDialogOpen(true)}
           >
-            ⤢ Expandir
+            ⤢ Expand
           </button>
         </div>
         {countries.length ? (
@@ -169,12 +169,12 @@ export default function AnalyticsVisualizations({
               {countries.slice(0, 5).map((country) => (
                 <div key={country.country} className="flex justify-between text-sm">
                   <span className="truncate text-muted">{country.country}</span>
-                  <span>{country.visits.toLocaleString('pt-BR')} <span className="text-muted">visits</span></span>
+                  <span>{country.visits.toLocaleString('en-US')} <span className="text-muted">visits</span></span>
                 </div>
               ))}
             </div>
           </div>
-        ) : <p className="text-sm text-muted">Sem dados geográficos.</p>}
+        ) : <p className="text-sm text-muted">No geographic data.</p>}
       </section>
 
       <section className="card space-y-4 lg:col-span-2">
@@ -203,7 +203,7 @@ export default function AnalyticsVisualizations({
               )
             })}
           </div>
-        ) : <p className="text-sm text-muted">Sem fontes de tráfego para este período.</p>}
+        ) : <p className="text-sm text-muted">No traffic sources for this period.</p>}
       </section>
 
       {countryDialogOpen && (

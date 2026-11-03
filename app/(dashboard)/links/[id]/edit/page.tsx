@@ -50,12 +50,12 @@ export default async function EditLinkPage({ params }: { params: { id: string } 
           ← Dashboard
         </Link>
         <span className="text-border">/</span>
-        <h1 className="text-xl font-semibold">Editar: {link.title}</h1>
+        <h1 className="text-xl font-semibold">Edit: {link.title}</h1>
       </div>
 
       <LinkForm
         action={boundAction}
-        submitLabel="Salvar alterações"
+        submitLabel="Save changes"
         hasSpotify={!!spotifyConnection}
         pixels={pixels}
         selectedPixelIds={link.pixels.map((item) => item.pixelId)}

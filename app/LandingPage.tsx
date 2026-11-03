@@ -17,34 +17,34 @@ const PLATFORMS = [
 const FEATURES = [
   {
     title: 'Smart Links',
-    body:  'Cole o URL de qualquer plataforma. O TrackScale busca capa, título e artista automaticamente. Você recebe um link único que funciona em todos os players.',
+    body:  'Paste any platform URL. TrackScale fetches artwork, title and artist automatically. You get one link that works on every player.',
   },
   {
-    title: 'Analytics em tempo real',
-    body:  'Cada clique registrado no instante em que acontece: cidade, país, plataforma escolhida, dispositivo e fonte de tráfego. Dados que aparecem antes do café esfriar.',
+    title: 'Real-time Analytics',
+    body:  'Every click logged the moment it happens: city, country, platform chosen, device and traffic source. Data that shows up in real time.',
   },
   {
-    title: 'Detecção de bots',
-    body:  'Click-farming e tráfego inválido poluem campanhas de música. Cada acesso suspeito é identificado e isolado dos seus relatórios automaticamente.',
+    title: 'Bot Detection',
+    body:  'Click-farming and invalid traffic pollute music campaigns. Every suspicious visit is identified and isolated from your reports automatically.',
   },
   {
     title: 'Consent Manager',
-    body:  'LGPD e GDPR exigem consentimento antes de rastrear. O banner está integrado em cada smart link — sem configuração extra da sua parte.',
+    body:  'Privacy laws require consent before tracking. The consent notice is built into every smart link — no extra setup on your end.',
   },
 ]
 
 const STEPS = [
   {
-    title: 'Cole o link da música',
-    body:  'Cole qualquer URL do Spotify, Apple Music ou YouTube Music. Capa, título e artista são buscados sozinhos.',
+    title: 'Paste the music link',
+    body:  'Paste any URL from Spotify, Apple Music or YouTube Music. Artwork, title and artist are fetched automatically.',
   },
   {
-    title: 'Gere o smart link',
-    body:  'Em segundos você recebe um link trackscale.app/l/... pronto para Instagram, TikTok e bio de artista.',
+    title: 'Generate the smart link',
+    body:  'In seconds you get a trackscale.app/l/... link ready for Instagram, TikTok and artist bios.',
   },
   {
-    title: 'Acompanhe ao vivo',
-    body:  'Cada clique aparece no painel na hora: cidade, plataforma e se foi humano ou bot. Dados limpos desde o primeiro acesso.',
+    title: 'Track in real time',
+    body:  'Every click appears in the dashboard instantly: city, platform and whether it was human or bot. Clean data from day one.',
   },
 ]
 
@@ -203,8 +203,8 @@ function SmartLinkMockup() {
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="white" strokeWidth="1.5" strokeOpacity="0.35"/>
           </svg>
         </div>
-        <p className="slm-title">Nome da Faixa</p>
-        <p className="slm-artist">Artista</p>
+        <p className="slm-title">Track Name</p>
+        <p className="slm-artist">Artist</p>
         <div className="slm-links">
           {links.map((l) => (
             <div key={l.label} className="slm-btn" style={{ background: l.bg, borderColor: `${l.color}22`, color: l.color }}>
@@ -230,7 +230,7 @@ function AnalyticsMockup() {
       <div className="am-card">
         <div className="am-card-header">
           <div>
-            <p className="am-label">Cliques (30d)</p>
+            <p className="am-label">Clicks (30d)</p>
             <p className="am-stat">4.891</p>
           </div>
           <span className="am-badge">↑ 34%</span>
@@ -247,11 +247,11 @@ function AnalyticsMockup() {
 
       {/* Bot card */}
       <div className="am-card">
-        <p className="am-label">Bots bloqueados</p>
+        <p className="am-label">Bots blocked</p>
         <p className="am-stat" style={{ marginBottom: '20px' }}>217</p>
         {[
-          { label: 'Visitantes reais', pct: 89, color: '#a855f7' },
-          { label: 'Bots detectados',  pct: 11, color: 'rgba(255,255,255,0.1)' },
+          { label: 'Real visitors', pct: 89, color: '#a855f7' },
+          { label: 'Bots detected',  pct: 11, color: 'rgba(255,255,255,0.1)' },
         ].map((r) => (
           <div key={r.label} style={{ marginBottom: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
@@ -267,7 +267,7 @@ function AnalyticsMockup() {
 
       {/* Platforms card */}
       <div className="am-card am-full">
-        <p className="am-label" style={{ marginBottom: '16px' }}>Por plataforma</p>
+        <p className="am-label" style={{ marginBottom: '16px' }}>By platform</p>
         {[
           { name: 'Spotify',     pct: 58, color: '#1db954' },
           { name: 'Apple Music', pct: 24, color: '#fc3c44' },
@@ -356,49 +356,49 @@ export default function LandingPage() {
           <a href="/" className="llogo">Track<span>Scale</span></a>
 
           <nav className="llinks" aria-label="Principal">
-            <a href="#recursos">Recursos</a>
+            <a href="#features">Features</a>
             <a href="#analytics">Analytics</a>
-            <a href="#como">Como funciona</a>
+            <a href="#how">How it works</a>
           </nav>
 
           <div className="lactions">
-            <Link href="/login" className="lbtn lb-login">Entrar</Link>
-            <Link href="/register" className="lbtn lb-start">Criar conta <ArwIcon /></Link>
+            <Link href="/login" className="lbtn lb-login">Log in</Link>
+            <Link href="/register" className="lbtn lb-start">Sign up <ArwIcon /></Link>
           </div>
 
-          <button id="lbg" className="lburger" aria-label="Abrir menu" aria-expanded="false" aria-controls="lmenu">
+          <button id="lbg" className="lburger" aria-label="Open menu" aria-expanded="false" aria-controls="lmenu">
             <span />
           </button>
         </header>
 
         {/* Mobile menu */}
         <nav id="lmenu" className="lmenu" aria-label="Mobile">
-          <a href="#recursos">Recursos</a>
+          <a href="#features">Features</a>
           <a href="#analytics">Analytics</a>
-          <a href="#como">Como funciona</a>
+          <a href="#how">How it works</a>
           <div className="lmenu-div" />
-          <Link href="/login">Entrar</Link>
-          <Link href="/register" className="lmenu-start">Criar conta <ArwIcon /></Link>
+          <Link href="/login">Log in</Link>
+          <Link href="/register" className="lmenu-start">Sign up <ArwIcon /></Link>
         </nav>
 
         {/* Hero inner */}
         <div className="lhero-inner">
           <h1 className="lh1">
-            <span className="ln"><span className="ln-i">Distribua a música.</span></span>
-            <span className="ln"><span className="ln-i">Veja onde ela vai.</span></span>
+            <span className="ln"><span className="ln-i">Distribute the music.</span></span>
+            <span className="ln"><span className="ln-i">See where it goes.</span></span>
           </h1>
 
           <p className="lsub">
-            Smart links para todas as plataformas. Analytics em tempo real.<br />
-            Detecção de bots incluída — dados limpos desde o primeiro clique.
+            Smart links for every platform. Real-time analytics.<br />
+            Bot detection included — clean data from the very first click.
           </p>
 
           <div className="lctas">
             <Link href="/register" className="lbtn lb-lg lb-primary">
-              Criar smart link grátis <ArwIcon cls="arw-lg" />
+              Create smart link for free <ArwIcon cls="arw-lg" />
             </Link>
-            <a href="#como" className="lbtn lb-lg lb-ghost">
-              Ver como funciona <ArwIcon cls="arw-lg" />
+            <a href="#how" className="lbtn lb-lg lb-ghost">
+              See how it works <ArwIcon cls="arw-lg" />
             </a>
           </div>
 
@@ -411,7 +411,7 @@ export default function LandingPage() {
 
         {/* Platforms strip */}
         <section className="lsec plat-sec" data-rv>
-          <p className="plat-label">Compatível com 50+ plataformas</p>
+          <p className="plat-label">Compatible with 50+ platforms</p>
           <div className="plat-row">
             {PLATFORMS.map((p) => (
               <span key={p.name} className="plat-dot">
@@ -425,19 +425,19 @@ export default function LandingPage() {
         {/* Statement */}
         <section className="lsec stmt-sec" data-rv>
           <h2 className="stmt-h2">
-            Um link inteligente que<br />
-            sabe onde seu fã vai ouvir.
+            One smart link that knows<br />
+            where your fan wants to listen.
           </h2>
           <p className="stmt-body">
-            Cole o URL de qualquer plataforma. O TrackScale identifica a música,
-            cria um link universal e redireciona cada visitante para o player
-            que ele já usa — sem atrito, sem perder cliques.
+            Paste any platform URL. TrackScale identifies the track,
+            creates a universal link and sends each visitor to the player
+            they already use — no friction, no lost clicks.
           </p>
         </section>
 
         {/* Features */}
-        <section id="recursos" className="lsec feats-sec">
-          <span className="sec-label" data-rv>Recursos</span>
+        <section id="features" className="lsec feats-sec">
+          <span className="sec-label" data-rv>Features</span>
           {FEATURES.map((f, i) => (
             <div
               key={f.title}
@@ -456,17 +456,17 @@ export default function LandingPage() {
         <section id="analytics" className="lsec dash-sec" data-rv>
           <div className="dash-hdr">
             <span className="sec-label">Analytics</span>
-            <h2 className="dash-h2">Dados que realmente importam.</h2>
-            <p className="dash-sub">Cada clique registrado. Bots filtrados. Dados reais desde o início.</p>
+            <h2 className="dash-h2">Data that actually matters.</h2>
+            <p className="dash-sub">Every click logged. Bots filtered. Real data from the start.</p>
           </div>
           <AnalyticsMockup />
         </section>
 
         {/* How it works */}
-        <section id="como" className="lsec how-sec">
+        <section id="how" className="lsec how-sec">
           <div data-rv>
-            <span className="sec-label">Como funciona</span>
-            <h2 className="how-h2">Três passos para lançar.</h2>
+            <span className="sec-label">How it works</span>
+            <h2 className="how-h2">Three steps to launch.</h2>
           </div>
           <div className="steps">
             {STEPS.map((s, i) => (
@@ -489,13 +489,13 @@ export default function LandingPage() {
           <SmartLinkMockup />
           <div className="link-copy">
             <span className="sec-label">Smart Link</span>
-            <h2 className="link-h2">Como o fã vê.</h2>
+            <h2 className="link-h2">What the fan sees.</h2>
             <p className="link-body">
-              O smart link detecta o dispositivo e abre direto no app instalado.
-              Em desktop mostra todos os players para o fã escolher.
+              The smart link detects the device and opens directly in the installed app.
+              On desktop it shows all players for the fan to choose.
             </p>
             <ul className="link-checks">
-              {['Abre o app instalado direto', 'Design customizável por artista', 'Carrega em menos de 1 segundo'].map((c) => (
+              {['Opens the installed app directly', 'Customizable design per artist', 'Loads in under 1 second'].map((c) => (
                 <li key={c}><CheckIcon />{c}</li>
               ))}
             </ul>
@@ -505,14 +505,14 @@ export default function LandingPage() {
         {/* Bottom CTA */}
         <section className="lsec cta-sec" data-rv>
           <h2 className="cta-h2">
-            Seu próximo lançamento<br />
-            merece <em>dados reais.</em>
+            Your next release<br />
+            deserves <em>real data.</em>
           </h2>
-          <p className="cta-sub">Crie sua conta e gere seu primeiro smart link em menos de 2 minutos.</p>
+          <p className="cta-sub">Create your account and generate your first smart link in under 2 minutes.</p>
           <Link href="/register" className="lbtn lb-cta">
-            Começar grátis <ArwIcon cls="arw-cta" />
+            Start for free <ArwIcon cls="arw-cta" />
           </Link>
-          <p className="cta-fine">Sem cartão de crédito. Sem compromisso.</p>
+          <p className="cta-fine">No credit card. No commitment.</p>
         </section>
       </div>
 
@@ -520,8 +520,8 @@ export default function LandingPage() {
       <footer className="lfooter">
         <span>Track<span style={{ color: '#a855f7' }}>Scale</span> · Osten Company</span>
         <div className="lfooter-links">
-          <Link href="/login">Entrar</Link>
-          <Link href="/register">Criar conta</Link>
+          <Link href="/login">Log in</Link>
+          <Link href="/register">Sign up</Link>
         </div>
       </footer>
     </>

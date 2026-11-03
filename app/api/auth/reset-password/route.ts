@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
   const { token, password } = body
   if (!token || !password || password.length < 8) {
-    return NextResponse.json({ error: 'Dados inválidos.' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid data.' }, { status: 400 })
   }
 
   const resetToken = await prisma.passwordResetToken.findUnique({
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   })
 
   if (!resetToken || resetToken.used || resetToken.expiresAt < new Date()) {
-    return NextResponse.json({ error: 'Link inválido ou expirado. Solicite um novo.' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid or expired link. Please request a new one.' }, { status: 400 })
   }
 
   const hashed = await bcrypt.hash(password, 12)

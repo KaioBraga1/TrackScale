@@ -8,13 +8,13 @@ import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
 const artistSchema = z.object({
-  name: z.string().min(1, 'Nome obrigatório').max(100).trim(),
+  name: z.string().min(1, 'Name is required').max(100).trim(),
   spotifyId: z
     .string()
-    .regex(/^[A-Za-z0-9]{22}$/, 'Spotify ID inválido (22 caracteres)')
+    .regex(/^[A-Za-z0-9]{22}$/, 'Invalid Spotify ID (22 characters)')
     .optional()
     .or(z.literal('')),
-  imageUrl: z.string().url('URL inválida').max(2048).optional().or(z.literal('')),
+  imageUrl: z.string().url('Invalid URL').max(2048).optional().or(z.literal('')),
 })
 
 export type ArtistFormState = {
@@ -56,10 +56,10 @@ export async function createArtist(
     })
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-      return { error: 'Já existe um artista com esse nome ou Spotify ID nesta conta.' }
+      return { error: 'An artist with this name or Spotify ID already exists in this account.' }
     }
     console.error('[createArtist]', e)
-    return { error: 'Erro interno. Tente novamente.' }
+    return { error: 'Internal error. Please try again.' }
   }
 
   revalidatePath('/artists')
@@ -74,7 +74,7 @@ export async function updateArtist(
   const userId = await requireUser()
 
   const artist = await prisma.artist.findUnique({ where: { id }, select: { userId: true } })
-  if (!artist || artist.userId !== userId) return { error: 'Artista não encontrado.' }
+  if (!artist || artist.userId !== userId) return { error: 'Artist not found.' }
 
   const parsed = artistSchema.safeParse({
     name: formData.get('name'),
@@ -99,10 +99,10 @@ export async function updateArtist(
     })
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-      return { error: 'Já existe um artista com esse nome ou Spotify ID nesta conta.' }
+      return { error: 'An artist with this name or Spotify ID already exists in this account.' }
     }
     console.error('[updateArtist]', e)
-    return { error: 'Erro interno. Tente novamente.' }
+    return { error: 'Internal error. Please try again.' }
   }
 
   revalidatePath('/artists')

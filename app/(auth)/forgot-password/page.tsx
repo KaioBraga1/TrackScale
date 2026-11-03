@@ -61,19 +61,19 @@ export default function ForgotPasswordPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="font-semibold" style={{ color: 'var(--text)' }}>Email enviado</h2>
+                <h2 className="font-semibold" style={{ color: 'var(--text)' }}>Email sent</h2>
                 <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
-                  Verifique a caixa de entrada de <strong style={{ color: 'var(--text-secondary)' }}>{email}</strong>. O link expira em 1 hora.
+                  Check the inbox of <strong style={{ color: 'var(--text-secondary)' }}>{email}</strong>. The link expires in 1 hour.
                 </p>
               </div>
-              <Link href="/login" className="btn-secondary w-full text-center block">Voltar ao login</Link>
+              <Link href="/login" className="btn-secondary w-full text-center block">Back to login</Link>
             </div>
           ) : (
             <>
               <div>
-                <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Esqueceu sua senha?</h2>
+                <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Forgot your password?</h2>
                 <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
-                  Informe seu email e enviaremos um link para criar uma nova senha.
+                  Enter your email and we will send you a link to create a new password.
                 </p>
               </div>
 
@@ -87,7 +87,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="input"
-                    placeholder="seu@email.com"
+                    placeholder="you@email.com"
                     autoFocus
                   />
                 </div>
@@ -103,9 +103,9 @@ export default function ForgotPasswordPage() {
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Enviando…
+                      Sending…
                     </span>
-                  ) : 'Enviar link de redefinição'}
+                  ) : 'Send reset link'}
                 </button>
               </form>
             </>
@@ -114,7 +114,7 @@ export default function ForgotPasswordPage() {
 
         <p className="text-center text-sm mt-5" style={{ color: 'var(--muted)' }}>
           <Link href="/login" style={{ color: 'var(--accent)' }} className="hover:underline">
-            ← Voltar ao login
+            ← Back to login
           </Link>
         </p>
       </div>

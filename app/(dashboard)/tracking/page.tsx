@@ -31,12 +31,12 @@ export default async function TrackingPage({
 
   const isError = !!searchParams.error
   const message = isError
-    ? searchParams.error === 'duplicate' ? 'Pixel duplicado ou inválido.'
-      : searchParams.error === 'artist' ? 'Artista selecionado inválido.'
-      : 'Não foi possível concluir a ação.'
-    : searchParams.created ? 'Pixel adicionado.'
-    : searchParams.updated ? 'Pixel atualizado.'
-    : searchParams.deleted ? 'Pixel removido.'
+    ? searchParams.error === 'duplicate' ? 'Duplicate or invalid pixel.'
+      : searchParams.error === 'artist' ? 'Invalid artist selected.'
+      : 'Could not complete the action.'
+    : searchParams.created ? 'Pixel added.'
+    : searchParams.updated ? 'Pixel updated.'
+    : searchParams.deleted ? 'Pixel removed.'
     : null
 
   return (
@@ -44,7 +44,7 @@ export default async function TrackingPage({
       <header>
         <p className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted)', letterSpacing: '0.12em' }}>Data Connections</p>
         <h1 className="mt-1 text-2xl font-semibold" style={{ color: 'var(--text)' }}>Tracking</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>Pixels reutilizáveis em artistas e smartlinks.</p>
+        <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>Reusable pixels for artists and smartlinks.</p>
       </header>
 
       {message && (
@@ -61,10 +61,10 @@ export default async function TrackingPage({
 
       {/* Add pixel form */}
       <section className="card space-y-4">
-        <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Adicionar Pixel</h2>
+        <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Add Pixel</h2>
         <form action={createPixel} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
           <div>
-            <label className="label">Nome do pixel</label>
+            <label className="label">Pixel name</label>
             <input name="name" required maxLength={80} className="input" placeholder="Osten Meta Ads" />
           </div>
           <div>
@@ -81,7 +81,7 @@ export default async function TrackingPage({
           </div>
           {artists.length > 0 && (
             <div>
-              <label className="label">Artistas</label>
+              <label className="label">Artists</label>
               <select name="artistIds" multiple className="input" style={{ minHeight: '80px' }}>
                 {artists.map((artist) => (
                   <option key={artist.id} value={artist.id}>{artist.name}</option>
@@ -89,7 +89,7 @@ export default async function TrackingPage({
               </select>
             </div>
           )}
-          <button type="submit" className="btn-primary self-end">Adicionar</button>
+          <button type="submit" className="btn-primary self-end">Add</button>
         </form>
       </section>
 
@@ -104,8 +104,8 @@ export default async function TrackingPage({
               <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" strokeWidth="1.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <p className="font-medium" style={{ color: 'var(--text)' }}>Nenhum pixel configurado</p>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>Adicione um Meta Pixel para rastrear conversões nos seus smartlinks.</p>
+          <p className="font-medium" style={{ color: 'var(--text)' }}>No pixels configured</p>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>Add a Meta Pixel to track conversions on your smartlinks.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -116,14 +116,14 @@ export default async function TrackingPage({
                   <h2 className="font-semibold" style={{ color: 'var(--text)' }}>{pixel.name}</h2>
                   <details className="mt-1">
                     <summary className="cursor-pointer font-mono text-xs" style={{ color: 'var(--muted)' }}>
-                      ID: ••••••••{pixel.metaPixelId.slice(-4)} <span className="font-sans underline">revelar</span>
+                      ID: ••••••••{pixel.metaPixelId.slice(-4)} <span className="font-sans underline">reveal</span>
                     </summary>
                     <code className="mt-1 block font-mono text-xs" style={{ color: 'var(--muted)' }}>{pixel.metaPixelId}</code>
                   </details>
                 </div>
                 <form action={deletePixel}>
                   <input type="hidden" name="id" value={pixel.id} />
-                  <button className="btn-danger text-xs" type="submit">Remover</button>
+                  <button className="btn-danger text-xs" type="submit">Remove</button>
                 </form>
               </div>
 
@@ -138,17 +138,17 @@ export default async function TrackingPage({
                   </span>
                 ))}
                 {!pixel.artists.length && !pixel.links.length && (
-                  <span className="text-xs" style={{ color: 'var(--muted)' }}>Sem atribuições</span>
+                  <span className="text-xs" style={{ color: 'var(--muted)' }}>No assignments</span>
                 )}
               </div>
 
               {/* Edit */}
               <details style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
-                <summary className="cursor-pointer text-xs" style={{ color: 'var(--muted)' }}>Editar pixel ▾</summary>
+                <summary className="cursor-pointer text-xs" style={{ color: 'var(--muted)' }}>Edit pixel ▾</summary>
                 <form action={updatePixel} className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
                   <input type="hidden" name="id" value={pixel.id} />
                   <div>
-                    <label className="label">Nome</label>
+                    <label className="label">Name</label>
                     <input name="name" defaultValue={pixel.name} required maxLength={80} className="input" />
                   </div>
                   <div>
@@ -157,7 +157,7 @@ export default async function TrackingPage({
                   </div>
                   {artists.length > 0 && (
                     <div>
-                      <label className="label">Artistas</label>
+                      <label className="label">Artists</label>
                       <select
                         name="artistIds"
                         multiple
@@ -171,7 +171,7 @@ export default async function TrackingPage({
                       </select>
                     </div>
                   )}
-                  <button type="submit" className="btn-secondary self-end text-sm">Guardar</button>
+                  <button type="submit" className="btn-secondary self-end text-sm">Save</button>
                 </form>
               </details>
             </article>

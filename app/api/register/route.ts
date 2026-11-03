@@ -9,30 +9,30 @@ const registerSchema = z.object({
   email: z.string().email().max(254).toLowerCase(),
   password: z
     .string()
-    .min(8, 'Mínimo 8 caracteres')
-    .max(128, 'Máximo 128 caracteres'),
+    .min(8, 'Minimum 8 characters')
+    .max(128, 'Maximum 128 characters'),
 })
 
 export async function POST(req: NextRequest) {
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
 
-  // Rate limit: 5 cadastros por hora por IP
+  // Rate limit: 5 registrations per hour per IP
   const { allowed } = rateLimit(`register:${ip}`, 5, 60 * 60 * 1000)
   if (!allowed) {
-    return NextResponse.json({ error: 'Muitas tentativas. Tente mais tarde.' }, { status: 429 })
+    return NextResponse.json({ error: 'Too many attempts. Please try again later.' }, { status: 429 })
   }
 
   let body: unknown
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: 'JSON inválido.' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400 })
   }
 
   const parsed = registerSchema.safeParse(body)
   if (!parsed.success) {
-    const msg = parsed.error.errors[0]?.message ?? 'Dados inválidos.'
+    const msg = parsed.error.errors[0]?.message ?? 'Invalid data.'
     return NextResponse.json({ error: msg }, { status: 400 })
   }
 
@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
   })
 
   if (existing) {
-    // Não vaza se o email já existe (enumeração de usuários)
-    // Retorna sucesso genérico — o login falhará depois
+    // Don't leak whether the email already exists (user enumeration)
+    // Return generic success — login will fail later
     return NextResponse.json({ ok: true })
   }
 

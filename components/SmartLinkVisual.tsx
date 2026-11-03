@@ -59,10 +59,10 @@ const DeezerIcon = (
 )
 
 const PLATFORM_CONFIG: Record<string, { label: string; iconBg: string; icon: React.ReactNode }> = {
-  spotify:       { label: 'Ouvir no Spotify',        iconBg: '#1DB954',                                   icon: SpotifyIcon },
-  apple_music:   { label: 'Ouvir na Apple Music',    iconBg: 'linear-gradient(135deg, #fc3c44, #f9148b)', icon: AppleIcon },
-  youtube_music: { label: 'Ouvir no YouTube Music',  iconBg: '#FF0000',                                   icon: YouTubeIcon },
-  deezer:        { label: 'Ouvir no Deezer',         iconBg: 'linear-gradient(135deg, #A238FF, #7B2BCC)', icon: DeezerIcon },
+  spotify:       { label: 'Listen on Spotify',        iconBg: '#1DB954',                                   icon: SpotifyIcon },
+  apple_music:   { label: 'Listen on Apple Music',    iconBg: 'linear-gradient(135deg, #fc3c44, #f9148b)', icon: AppleIcon },
+  youtube_music: { label: 'Listen on YouTube Music',  iconBg: '#FF0000',                                   icon: YouTubeIcon },
+  deezer:        { label: 'Listen on Deezer',         iconBg: 'linear-gradient(135deg, #A238FF, #7B2BCC)', icon: DeezerIcon },
 }
 
 const COVER_SIZES: Record<string, { width: number; height: number }> = {
@@ -157,11 +157,11 @@ export default function SmartLinkVisual({
       {/* Title + artist + bio */}
       <div style={{ textAlign: 'center', padding: '16px 20px 8px', position: 'relative', zIndex: 1 }}>
         <h2 style={{ color: 'white', fontSize: 24, fontWeight: 700, lineHeight: 1.2, margin: 0 }}>
-          {title || 'Título da música'}
+          {title || 'Track title'}
         </h2>
         {(artist || !title) && (
           <p style={{ color: '#b8b8d0', fontSize: 15, marginTop: 4 }}>
-            {artist || 'Artista'}
+            {artist || 'Artist'}
           </p>
         )}
         {bioText && (
@@ -184,7 +184,7 @@ export default function SmartLinkVisual({
               <path d="M12 2L3 6.5V12c0 5 3.8 9.3 9 10.3C18.2 21.3 22 17 22 12V6.5L12 2z" stroke="#10b981" strokeWidth="1.5" fill="rgba(16,185,129,0.15)"/>
               <path d="M9 12l2 2 4-4" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <span style={{ color: '#10b981', fontSize: 11, fontWeight: 500 }}>Verificado · tráfego real</span>
+            <span style={{ color: '#10b981', fontSize: 11, fontWeight: 500 }}>Verified · real traffic</span>
           </div>
         )}
 
@@ -215,7 +215,7 @@ export default function SmartLinkVisual({
         }) : (
           <div style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}`, borderRadius: btnRadius, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: theme.border, flexShrink: 0 }} />
-            <span style={{ color: '#4444aa', fontSize: 13 }}>Adicione plataformas →</span>
+            <span style={{ color: '#4444aa', fontSize: 13 }}>Add platforms →</span>
           </div>
         )}
       </div>
@@ -223,11 +223,11 @@ export default function SmartLinkVisual({
       {/* Consent banner */}
       <div style={{ margin: '12px 16px 8px', backgroundColor: theme.card, border: `1px solid ${theme.border}`, borderRadius: 12, padding: '10px 12px', position: 'relative', zIndex: 1 }}>
         <p style={{ color: '#bbbbdd', fontSize: 11, marginBottom: 8, lineHeight: 1.5 }}>
-          Ajude a medir visitas e campanhas. Sua escolha não altera o acesso à música.
+          Help measure visits and campaigns. Your choice does not affect access to the music.
         </p>
         <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1, backgroundColor: accent, borderRadius: 8, padding: '6px 0', textAlign: 'center', fontSize: 10, color: 'white', fontWeight: 600 }}>Aceitar</div>
-          <div style={{ flex: 1, border: `1px solid ${theme.border}`, borderRadius: 8, padding: '6px 0', textAlign: 'center', fontSize: 10, color: '#aaaacc' }}>Recusar</div>
+          <div style={{ flex: 1, backgroundColor: accent, borderRadius: 8, padding: '6px 0', textAlign: 'center', fontSize: 10, color: 'white', fontWeight: 600 }}>Accept</div>
+          <div style={{ flex: 1, border: `1px solid ${theme.border}`, borderRadius: 8, padding: '6px 0', textAlign: 'center', fontSize: 10, color: '#aaaacc' }}>Decline</div>
         </div>
       </div>
 

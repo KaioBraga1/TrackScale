@@ -28,7 +28,7 @@ function LoginForm() {
     })
 
     setLoading(false)
-    if (result?.error) { setError('Email ou senha inválidos.'); return }
+    if (result?.error) { setError('Invalid email or password.'); return }
     router.push('/dashboard')
     router.refresh()
   }
@@ -59,7 +59,7 @@ function LoginForm() {
         </div>
 
         <div className="card space-y-5">
-          <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Entrar na sua conta</h2>
+          <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Sign in to your account</h2>
 
           {justReset && (
             <div className="text-sm rounded-lg px-3 py-2.5 flex items-center gap-2"
@@ -67,21 +67,21 @@ function LoginForm() {
               <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 flex-shrink-0">
                 <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              Senha redefinida com sucesso. Faça login.
+              Password reset successfully. Please log in.
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="label">Email</label>
-              <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder="seu@email.com" />
+              <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder="you@email.com" />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="password" className="label mb-0">Senha</label>
+                <label htmlFor="password" className="label mb-0">Password</label>
                 <Link href="/forgot-password" className="text-xs transition-colors hover:underline" style={{ color: 'var(--accent)' }}>
-                  Esqueci a senha
+                  Forgot password
                 </Link>
               </div>
               <div className="relative">
@@ -100,7 +100,7 @@ function LoginForm() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
                   style={{ color: 'var(--muted)' }}
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
                     <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" stroke="currentColor" strokeWidth="2">
@@ -127,16 +127,16 @@ function LoginForm() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Entrando…
+                  Signing in…
                 </span>
-              ) : 'Entrar'}
+              ) : 'Sign in'}
             </button>
           </form>
         </div>
 
         <p className="text-center text-sm mt-5" style={{ color: 'var(--muted)' }}>
-          Sem conta?{' '}
-          <Link href="/register" style={{ color: 'var(--accent)' }} className="hover:underline">Cadastrar</Link>
+          No account?{' '}
+          <Link href="/register" style={{ color: 'var(--accent)' }} className="hover:underline">Sign up</Link>
         </p>
       </div>
     </div>

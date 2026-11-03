@@ -9,14 +9,14 @@ export async function POST(req: NextRequest) {
 
   const email = (body.email ?? '').trim().toLowerCase()
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: 'Email inválido.' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid email.' }, { status: 400 })
   }
 
-  // Sempre retorna sucesso para não vazar se o email existe
+  // Always returns success to avoid leaking whether the email exists
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true, email: true } })
   if (!user) return NextResponse.json({ ok: true })
 
-  // Invalida tokens anteriores
+  // Invalidate previous tokens
   await prisma.passwordResetToken.updateMany({
     where: { userId: user.id, used: false },
     data: { used: true },
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     data: {
       userId: user.id,
       token,
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hora
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
     },
   })
 
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     await sendPasswordResetEmail(user.email, token)
   } catch (e) {
     console.error('[forgot-password] email failed:', e)
-    return NextResponse.json({ error: 'Não foi possível enviar o email. Tente novamente.' }, { status: 500 })
+    return NextResponse.json({ error: 'Could not send the email. Please try again.' }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true })
