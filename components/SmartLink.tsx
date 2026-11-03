@@ -248,35 +248,6 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
 
   return (
     <div className="w-full space-y-3">
-      {/* Badge de tráfego real — aparece após verificação, some se filtrado */}
-      {isVerified === true && (
-        <div
-          className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full mx-auto w-fit"
-          style={{
-            backgroundColor: 'rgba(16,185,129,0.12)',
-            border: '1px solid rgba(16,185,129,0.25)',
-          }}
-        >
-          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 flex-shrink-0" fill="none">
-            <path
-              d="M12 2L3 6.5V12c0 5 3.8 9.3 9 10.3C18.2 21.3 22 17 22 12V6.5L12 2z"
-              stroke="#10b981"
-              strokeWidth="1.5"
-              fill="rgba(16,185,129,0.15)"
-            />
-            <path
-              d="M9 12l2 2 4-4"
-              stroke="#10b981"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span className="text-xs font-medium" style={{ color: '#10b981' }}>
-            Verified · real traffic
-          </span>
-        </div>
-      )}
 
       {platforms.map((platform, i) => {
         const cfg = PLATFORM_CONFIG[platform.name]
@@ -308,30 +279,6 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
         )
       })}
 
-      {consentStatus === 'DENIED' ? (
-        <button
-          type="button"
-          onClick={() => void chooseConsent('GRANTED')}
-          className="w-full mt-3 text-xs underline underline-offset-2 text-center"
-          style={{ color: '#8888aa' }}
-        >
-          Re-enable analytics tracking
-        </button>
-      ) : (
-        <div className="mt-4 flex items-center justify-between gap-2 px-1">
-          <p className="text-xs" style={{ color: '#8888aa' }}>
-            This link uses analytics to measure campaigns.
-          </p>
-          <button
-            type="button"
-            onClick={() => void chooseConsent('DENIED')}
-            className="text-xs whitespace-nowrap underline underline-offset-2 flex-shrink-0"
-            style={{ color: '#8888aa' }}
-          >
-            Decline
-          </button>
-        </div>
-      )}
       {consentError && (
         <p role="alert" className="text-xs text-amber-400 text-center">
           {consentError}
