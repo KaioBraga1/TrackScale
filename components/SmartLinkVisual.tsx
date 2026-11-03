@@ -19,6 +19,7 @@ export interface LinkCustomization {
   coverSize?: 'lg' | 'sm' | 'hidden'
   showVerified?: boolean
   bioText?: string
+  bgStyle?: 'solid' | 'album-blur'
 }
 
 interface SmartLinkVisualProps {
@@ -88,15 +89,31 @@ export default function SmartLinkVisual({
   const coverSize   = customization?.coverSize ?? 'lg'
   const showVerified = customization?.showVerified ?? false
   const bioText     = customization?.bioText ?? ''
+  const bgStyle     = customization?.bgStyle ?? 'solid'
+  const useAlbumBg  = bgStyle === 'album-blur' && !!coverUrl
 
   const visiblePlatforms = platforms.filter((p) => p.name in PLATFORM_CONFIG)
 
   return (
-    <div style={{ backgroundColor: theme.bg, minHeight: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ backgroundColor: useAlbumBg ? 'transparent' : theme.bg, minHeight: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', overflow: 'hidden' }}>
+      {/* Album blur background */}
+      {useAlbumBg && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+          backgroundImage: `url(${coverUrl})`,
+          backgroundSize: 'cover', backgroundPosition: 'center',
+          filter: 'blur(40px) brightness(0.28) saturate(1.6)',
+          transform: 'scale(1.15)',
+        }} />
+      )}
+      {/* Dark overlay so content stays readable */}
+      {useAlbumBg && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: 'rgba(0,0,0,0.35)', pointerEvents: 'none' }} />
+      )}
       {/* Ambient glow */}
       <div style={{
         position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-        width: 320, height: 320, pointerEvents: 'none',
+        width: 320, height: 320, pointerEvents: 'none', zIndex: 0,
         background: `radial-gradient(ellipse, ${accent}20 0%, transparent 70%)`,
       }} />
 

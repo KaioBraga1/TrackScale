@@ -85,6 +85,7 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
   const customization = (link.customization ?? {}) as LinkCustomization
   const coverSize = customization.coverSize ?? 'lg'
   const coverDim = coverSize === 'lg' ? 'w-52 h-52' : coverSize === 'sm' ? 'w-28 h-28' : null
+  const useAlbumBg = customization.bgStyle === 'album-blur' && !!link.coverUrl
 
   const pixelIds = [
     ...link.pixels.map((a) => a.pixel.metaPixelId),
@@ -98,19 +99,37 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
 
       <div
         className="min-h-screen flex flex-col items-center"
-        style={{ backgroundColor: theme.bg }}
+        style={{ backgroundColor: useAlbumBg ? 'transparent' : theme.bg, position: 'relative', overflow: 'hidden' }}
       >
+        {/* Album blur background */}
+        {useAlbumBg && (
+          <>
+            <div
+              aria-hidden
+              style={{
+                position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+                backgroundImage: `url(${link.coverUrl})`,
+                backgroundSize: 'cover', backgroundPosition: 'center',
+                filter: 'blur(60px) brightness(0.25) saturate(1.8)',
+                transform: 'scale(1.15)',
+              }}
+            />
+            <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 0, background: 'rgba(0,0,0,0.4)', pointerEvents: 'none' }} />
+          </>
+        )}
+
         {/* Ambient glow top */}
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 pointer-events-none"
           style={{
+            zIndex: 1,
             background: 'radial-gradient(ellipse, rgba(168,85,247,0.06) 0%, transparent 70%)',
           }}
           aria-hidden
         />
 
         {/* Logo */}
-        <div className="w-full max-w-sm pt-10 pb-4 flex items-center justify-center gap-2 relative z-10">
+        <div className="w-full max-w-sm pt-10 pb-4 flex items-center justify-center gap-2 relative z-20">
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)' }}
@@ -124,7 +143,7 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
         </div>
 
         {/* Content */}
-        <div className="w-full max-w-sm flex flex-col items-center space-y-5 pb-16 relative z-10">
+        <div className="w-full max-w-sm flex flex-col items-center space-y-5 pb-16 relative z-20">
           {/* Album cover */}
           {coverDim && (
             <div
@@ -188,7 +207,7 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
         </div>
 
         {/* Footer */}
-        <div className="mt-auto pb-8 text-center relative z-10">
+        <div className="mt-auto pb-8 text-center relative z-20">
           <p className="text-xs" style={{ color: '#60607a' }}>Powered by TrackScale</p>
         </div>
       </div>

@@ -351,20 +351,9 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
         </p>
       )}
 
-      {/* Visitor Spotify connect */}
-      {!spotifyConnected ? (
-        <button
-          onClick={handleSpotifyConnect}
-          className="w-full mt-4 text-center text-sm py-2 transition-colors"
-          style={{ color: '#666688' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#aaaacc')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#666688')}
-        >
-          Conectar sua conta Spotify
-        </button>
-      ) : (
-        <div className="w-full mt-4 text-center text-sm py-2 flex items-center justify-center gap-1.5" style={{ color: '#10b981' }}>
-          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none">
+      {spotifyConnected && (
+        <div className="w-full mt-2 text-center text-xs py-1 flex items-center justify-center gap-1.5" style={{ color: '#10b981' }}>
+          <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none">
             <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           Spotify conectado

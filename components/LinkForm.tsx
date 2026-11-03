@@ -121,6 +121,7 @@ export default function LinkForm({
   const [coverSize, setCoverSize] = useState<'lg' | 'sm' | 'hidden'>(defaultValues?.customization?.coverSize ?? 'lg')
   const [showVerified, setShowVerified] = useState(defaultValues?.customization?.showVerified ?? false)
   const [bioText, setBioText] = useState(defaultValues?.customization?.bioText ?? '')
+  const [bgStyle, setBgStyle] = useState<'solid' | 'album-blur'>(defaultValues?.customization?.bgStyle ?? 'solid')
 
   const [platforms, setPlatforms] = useState(() => PLATFORMS.map(({ name, label, placeholder }) => {
     const saved = defaultValues?.platforms?.find((platform) => platform.name === name)
@@ -205,6 +206,7 @@ export default function LinkForm({
     coverSize,
     showVerified,
     bioText: bioText || undefined,
+    bgStyle,
   }
 
   const previewPlatforms = platforms.filter((p) => p.url && p.isActive).map((p) => ({ name: p.name, url: p.url }))
@@ -453,6 +455,27 @@ export default function LinkForm({
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Background style */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-white">Fundo com blur da capa</p>
+              <p className="text-xs text-muted mt-0.5">Usa a imagem do álbum como fundo com efeito glass</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setBgStyle((v) => v === 'album-blur' ? 'solid' : 'album-blur')}
+              className="relative w-10 h-6 rounded-full transition-colors"
+              style={{ backgroundColor: bgStyle === 'album-blur' ? accentColor : '#2a2a3a' }}
+              role="switch"
+              aria-checked={bgStyle === 'album-blur'}
+            >
+              <span
+                className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform"
+                style={{ transform: bgStyle === 'album-blur' ? 'translateX(16px)' : 'translateX(0)' }}
+              />
+            </button>
           </div>
 
           {/* Show verified badge */}
