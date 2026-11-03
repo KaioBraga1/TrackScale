@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
 
   let slug = ''
   let visitorId: string | null = null
+  let returnUrl: string | null = null
 
   // Tenta decodificar o state para saber o slug (para redirect correto)
   try {
@@ -18,6 +19,7 @@ export async function GET(req: NextRequest) {
       const decoded = JSON.parse(Buffer.from(state, 'base64url').toString())
       slug = decoded.slug ?? ''
       visitorId = decoded.visitorId ?? null
+      returnUrl = decoded.returnUrl ?? null
     }
   } catch {}
 
@@ -85,6 +87,11 @@ export async function GET(req: NextRequest) {
       }
     }
   } catch {}
+
+  // Se tinha uma URL de destino (ex: música no Spotify), vai direto pra ela
+  if (returnUrl) {
+    return NextResponse.redirect(returnUrl)
+  }
 
   return NextResponse.redirect(`${redirectBase}?spotify=connected`)
 }
