@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const FROM = process.env.RESEND_FROM ?? 'TrackScale <noreply@trackscale.com.br>'
+const FROM = process.env.RESEND_FROM ?? 'TrackScaler <noreply@trackscale.com.br>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://track-scale-r8j6.vercel.app'
 
 function getResend() {
@@ -15,7 +15,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   await getResend().emails.send({
     from: FROM,
     to: email,
-    subject: 'Reset password — TrackScale',
+    subject: 'Reset password — TrackScaler',
     html: `
 <!DOCTYPE html>
 <html lang="en">
@@ -29,7 +29,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
             <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16 7 22 7 22 13" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
-            <span style="color:#eeeef8;font-weight:700;font-size:18px;">TrackScale</span>
+            <span style="color:#eeeef8;font-weight:700;font-size:18px;">TrackScaler</span>
           </div>
           <h1 style="color:#eeeef8;font-size:22px;font-weight:600;margin:0 0 8px;">Reset your password</h1>
           <p style="color:#9898b8;font-size:14px;line-height:1.6;margin:0 0 28px;">We received a request to reset the password for your account. Click the button below to create a new password.</p>

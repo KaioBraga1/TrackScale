@@ -6,7 +6,7 @@ import { changePassword, saveAccountSettings, saveName, savePreferences } from '
 const TABS = ['account', 'security', 'membership', 'affiliate', 'preferences'] as const
 type SettingsTab = typeof TABS[number]
 
-export const metadata = { title: 'Settings | TrackScale' }
+export const metadata = { title: 'Settings | TrackScaler' }
 
 export default async function SettingsPage({
   searchParams,
@@ -146,7 +146,7 @@ export default async function SettingsPage({
             <button disabled className="btn-secondary opacity-60" title="Billing provider is not configured">Manage Subscription</button>
           </div>
           <div className="rounded-xl border border-border bg-card p-5">
-            <p className="text-xs uppercase tracking-widest text-muted">TrackScale {user.membershipStatus} plan</p>
+            <p className="text-xs uppercase tracking-widest text-muted">TrackScaler {user.membershipStatus} plan</p>
             <p className="mt-2 text-2xl font-semibold">{user.subscriptionPrice ? `$${user.subscriptionPrice.toString()}` : 'Billing not configured'}{user.subscriptionInterval ? ` / ${user.subscriptionInterval}` : ''}</p>
             <p className="mt-2 text-sm text-muted">Subscription and payment management require a billing provider.</p>
           </div>

@@ -104,7 +104,7 @@ export default function VisitorPopup({ visitorId, onClose }: VisitorPopupProps) 
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-3 border-b border-green-500/20" style={{ backgroundColor: '#0a0a0a' }}>
           <div className="flex items-center gap-3">
-            <span className="text-green-400 text-xs font-bold tracking-widest uppercase">TrackScale</span>
+            <span className="text-green-400 text-xs font-bold tracking-widest uppercase">TrackScaler</span>
             <span className="text-green-500/40">|</span>
             <span className="text-green-500/60 text-xs">visitor.profile</span>
           </div>

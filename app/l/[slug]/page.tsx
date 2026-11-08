@@ -139,7 +139,7 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
               <polyline points="16 7 22 7 22 13" strokeWidth="2.5" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <span className="text-white font-bold text-sm tracking-tight">TrackScale</span>
+          <span className="text-white font-bold text-sm tracking-tight">TrackScaler</span>
         </div>
 
         {/* Content */}
@@ -208,7 +208,7 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
 
         {/* Footer */}
         <div className="mt-auto pb-8 text-center relative z-20">
-          <p className="text-xs" style={{ color: '#60607a' }}>Powered by TrackScale</p>
+          <p className="text-xs" style={{ color: '#60607a' }}>Powered by TrackScaler</p>
         </div>
       </div>
     </>

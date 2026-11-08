@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import ArtistList from './ArtistList'
 
-export const metadata = { title: 'Artists | TrackScale' }
+export const metadata = { title: 'Artists | TrackScaler' }
 
 export default async function ArtistsPage() {
   const session = await auth()

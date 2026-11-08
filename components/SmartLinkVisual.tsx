@@ -125,7 +125,7 @@ export default function SmartLinkVisual({
             <polyline points="16 7 22 7 22 13" strokeWidth="2.5" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
-        <span style={{ color: 'white', fontWeight: 700, fontSize: 13, letterSpacing: '-0.02em' }}>TrackScale</span>
+        <span style={{ color: 'white', fontWeight: 700, fontSize: 13, letterSpacing: '-0.02em' }}>TrackScaler</span>
       </div>
 
       {/* Album cover */}
@@ -220,20 +220,9 @@ export default function SmartLinkVisual({
         )}
       </div>
 
-      {/* Consent banner */}
-      <div style={{ margin: '12px 16px 8px', backgroundColor: theme.card, border: `1px solid ${theme.border}`, borderRadius: 12, padding: '10px 12px', position: 'relative', zIndex: 1 }}>
-        <p style={{ color: '#bbbbdd', fontSize: 11, marginBottom: 8, lineHeight: 1.5 }}>
-          Help measure visits and campaigns. Your choice does not affect access to the music.
-        </p>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1, backgroundColor: accent, borderRadius: 8, padding: '6px 0', textAlign: 'center', fontSize: 10, color: 'white', fontWeight: 600 }}>Accept</div>
-          <div style={{ flex: 1, border: `1px solid ${theme.border}`, borderRadius: 8, padding: '6px 0', textAlign: 'center', fontSize: 10, color: '#aaaacc' }}>Decline</div>
-        </div>
-      </div>
-
       {/* Footer */}
       <div style={{ textAlign: 'center', padding: '20px 0 24px', position: 'relative', zIndex: 1 }}>
-        <p style={{ color: '#60607a', fontSize: 11 }}>Powered by TrackScale</p>
+        <p style={{ color: '#60607a', fontSize: 11 }}>Powered by TrackScaler</p>
       </div>
     </div>
   )

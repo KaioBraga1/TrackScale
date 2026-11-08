@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createPixel, deletePixel, updatePixel } from './actions'
 
-export const metadata = { title: 'Tracking | TrackScale' }
+export const metadata = { title: 'Tracking | TrackScaler' }
 
 export default async function TrackingPage({
   searchParams,

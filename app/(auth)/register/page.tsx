@@ -60,8 +60,8 @@ export default function RegisterPage() {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
-              Track<span style={{ color: 'var(--accent)' }}>Scale</span>
+            <h1 className="text-xl font-bold font-outfit" style={{ color: 'var(--text)', letterSpacing: '-0.03em' }}>
+              Track<span style={{ color: '#c084fc' }}>Scaler</span>
             </h1>
             <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>Osten Company</p>
           </div>

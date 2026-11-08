@@ -29,7 +29,7 @@ export default function PixelTestButton({ pixelId }: { pixelId: string }) {
     }
 
     ;(window as any).fbq?.('track', 'ViewContent', {
-      content_name: 'TrackScale Pixel Test',
+      content_name: 'TrackScaler Pixel Test',
     })
 
     setStatus('sent')

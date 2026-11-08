@@ -17,7 +17,7 @@ const PLATFORMS = [
 const FEATURES = [
   {
     title: 'Smart Links',
-    body:  'Paste any platform URL. TrackScale fetches artwork, title and artist automatically. You get one link that works on every player.',
+    body:  'Paste any platform URL. TrackScaler fetches artwork, title and artist automatically. You get one link that works on every player.',
   },
   {
     title: 'Real-time Analytics',
@@ -40,7 +40,7 @@ const STEPS = [
   },
   {
     title: 'Generate the smart link',
-    body:  'In seconds you get a trackscale.app/l/... link ready for Instagram, TikTok and artist bios.',
+    body:  'In seconds you get a trackscaler.com/l/... link ready for Instagram, TikTok and artist bios.',
   },
   {
     title: 'Track in real time',
@@ -353,7 +353,7 @@ export default function LandingPage() {
 
         {/* Nav */}
         <header className="lnav">
-          <a href="/" className="llogo">Track<span>Scale</span></a>
+          <a href="/" className="llogo">Track<span>Scaler</span></a>
 
           <nav className="llinks" aria-label="Principal">
             <a href="#features">Features</a>
@@ -429,7 +429,7 @@ export default function LandingPage() {
             where your fan wants to listen.
           </h2>
           <p className="stmt-body">
-            Paste any platform URL. TrackScale identifies the track,
+            Paste any platform URL. TrackScaler identifies the track,
             creates a universal link and sends each visitor to the player
             they already use — no friction, no lost clicks.
           </p>
@@ -591,11 +591,12 @@ const STYLES = `
 }
 
 .llogo {
+  font-family: var(--font-outfit, 'Outfit', system-ui, sans-serif);
   font-weight: 800;
-  font-size: calc(16.5 * var(--u));
+  font-size: calc(17 * var(--u));
   color: var(--ink);
   text-decoration: none;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
   white-space: nowrap;
 }
 .llogo span { color: var(--accent); }

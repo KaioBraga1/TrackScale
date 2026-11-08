@@ -20,7 +20,7 @@ const PLATFORM_LABELS: Record<string, string> = {
   deezer: 'Deezer',
 }
 
-export const metadata = { title: 'Estatísticas do Link' }
+export const metadata = { title: 'Link Stats' }
 
 export default async function LinkStatsPage({
   params,
@@ -380,19 +380,38 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
 }
 
 function classifySource(utmSource: string | null, referrer: string | null): string {
-  const value = (utmSource || referrer || '').toLowerCase()
-  if (!value) return 'Direct'
-  if (value.includes('instagram')) return 'Instagram'
-  if (value.includes('facebook') || value.includes('fb')) return 'Facebook'
-  if (value.includes('http')) {
+  const src = (utmSource ?? '').toLowerCase().trim()
+  const ref = (referrer ?? '').toLowerCase().trim()
+
+  // UTM source takes explicit priority
+  if (src) {
+    if (src === 'ig' || src.includes('instagram')) return 'Instagram'
+    if (src === 'fb' || src === 'facebook' || src.includes('facebook')) return 'Facebook'
+    if (src === 'google' || src.includes('google')) return 'Google'
+    if (src === 'tiktok' || src.includes('tiktok')) return 'TikTok'
+    if (src === 'twitter' || src === 'x' || src === 'x.com' || src.includes('twitter')) return 'X / Twitter'
+    if (src === 'youtube' || src.includes('youtube')) return 'YouTube'
+    if (src === 'direct') return 'Direct'
+    return src.charAt(0).toUpperCase() + src.slice(1)
+  }
+
+  // Fall back to referrer-based detection
+  if (ref) {
+    if (ref.includes('instagram.com') || ref.includes('l.instagram.com')) return 'Instagram'
+    if (ref.includes('facebook.com') || ref.includes('l.facebook.com') || ref.includes('fb.gg')) return 'Facebook'
+    if (ref.includes('google.')) return 'Google'
+    if (ref.includes('tiktok.com')) return 'TikTok'
+    if (ref.includes('twitter.com') || ref.includes('t.co') || ref.includes('x.com')) return 'X / Twitter'
+    if (ref.includes('youtube.com') || ref.includes('youtu.be')) return 'YouTube'
     try {
-      const host = new URL(value).hostname.replace(/^www\./, '')
+      const host = new URL(ref.startsWith('http') ? ref : `https://${ref}`).hostname.replace(/^www\./, '')
       return host || 'Other'
     } catch {
       return 'Other'
     }
   }
-  return value === 'direct' ? 'Direct' : 'Other'
+
+  return 'Direct'
 }
 
 function getLocalDateKey(date: Date, timezone: string): string {

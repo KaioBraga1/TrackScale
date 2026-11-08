@@ -308,7 +308,7 @@ export default function LinkForm({
           <div>
             <label className="label" htmlFor="slug">Public URL *</label>
             <div className="flex items-center gap-2">
-              <span className="text-muted text-xs whitespace-nowrap">trackscale.app/l/</span>
+              <span className="text-muted text-xs whitespace-nowrap">trackscaler.com/l/</span>
               <input
                 id="slug" name="slug" type="text" required maxLength={50}
                 value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}

@@ -48,7 +48,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>TrackScale</h1>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>TrackScaler</h1>
             <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>Osten Company</p>
           </div>
         </div>
