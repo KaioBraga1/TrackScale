@@ -95,7 +95,7 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
 
   return (
     <>
-      <Script src="/track.js" strategy="beforeInteractive" />
+      <Script src="/track.js" strategy="afterInteractive" />
 
       <div
         className="min-h-screen flex flex-col items-center"
