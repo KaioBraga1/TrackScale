@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     }
   } catch {}
 
-  const redirectBase = slug ? `${appUrl}/l/${slug}` : appUrl
+  const redirectBase = slug ? `${appUrl}/${slug}` : appUrl
 
   if (error || !code || !state) {
     return NextResponse.redirect(`${redirectBase}?spotify=error`)

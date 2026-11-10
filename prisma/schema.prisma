@@ -35,6 +35,10 @@ model User {
   subscriptionPrice    Decimal?            @db.Decimal(10, 2)
   subscriptionInterval String?
   subscriptionFeatures Json?
+  stripeCustomerId     String?             @unique
+  stripeSubscriptionId String?
+  subscriptionStatus   String?
+  currentPeriodEnd     DateTime?
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
   links                Link[]
@@ -42,6 +46,7 @@ model User {
   artists              Artist[]
   pixels               Pixel[]
   passwordResetTokens  PasswordResetToken[]
+  metaConnection       MetaConnection?
 
   @@index([email])
 }
@@ -238,6 +243,23 @@ model PlaylistFollowerSnapshot {
 
   @@unique([linkId, snapshotDate])
   @@index([linkId, snapshotDate])
+}
+
+model MetaConnection {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String
+  selectedAdAccountId   String?
+  selectedAdAccountName String?
+  currency              String?
+  metaUserId            String?
+  metaUserName          String?
+  expiresAt             DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
 }
 
 model PasswordResetToken {

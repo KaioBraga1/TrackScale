@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
   const clientId = process.env.SPOTIFY_CLIENT_ID
   if (!clientId) {
-    return NextResponse.redirect(`${appUrl}/l/${slug}?spotify=error`)
+    return NextResponse.redirect(`${appUrl}/${slug}?spotify=error`)
   }
 
   const redirectUri = `${appUrl}/api/auth/spotify/visitor/callback`

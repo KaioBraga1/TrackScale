@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { changePassword, saveAccountSettings, saveName, savePreferences } from './actions'
+import BillingPanel from '@/components/BillingPanel'
 
 const TABS = ['account', 'security', 'membership', 'affiliate', 'preferences'] as const
 type SettingsTab = typeof TABS[number]
@@ -11,7 +12,7 @@ export const metadata = { title: 'Settings | TrackScaler' }
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: { tab?: string; spotify?: string; saved?: string; error?: string; 'password-updated'?: string }
+  searchParams: { tab?: string; spotify?: string; saved?: string; error?: string; 'password-updated'?: string; checkout?: string }
 }) {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
@@ -137,25 +138,25 @@ export default async function SettingsPage({
       )}
 
       {tab === 'membership' && (
-        <section className="card space-y-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="font-semibold">Current plan: {user.membershipStatus}</h2>
-              <p className="text-sm text-muted">{user.trialEndsAt ? `Trial ends ${user.trialEndsAt.toLocaleDateString('en-US')}` : 'No active trial countdown.'}</p>
+        <section className="card">
+          {searchParams.checkout === 'success' && (
+            <div className="rounded-xl px-4 py-3 text-sm mb-4" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', color: '#34d399' }}>
+              Subscription active — welcome aboard! It may take a few seconds to reflect here.
             </div>
-            <button disabled className="btn-secondary opacity-60" title="Billing provider is not configured">Manage Subscription</button>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-5">
-            <p className="text-xs uppercase tracking-widest text-muted">TrackScaler {user.membershipStatus} plan</p>
-            <p className="mt-2 text-2xl font-semibold">{user.subscriptionPrice ? `$${user.subscriptionPrice.toString()}` : 'Billing not configured'}{user.subscriptionInterval ? ` / ${user.subscriptionInterval}` : ''}</p>
-            <p className="mt-2 text-sm text-muted">Subscription and payment management require a billing provider.</p>
-          </div>
-          <ul className="space-y-2 text-sm text-muted">
-            {Array.isArray(user.subscriptionFeatures) && user.subscriptionFeatures.map((feature, index) => (
-              <li key={index}>✓ {String(feature)}</li>
-            ))}
-            {(!Array.isArray(user.subscriptionFeatures) || user.subscriptionFeatures.length === 0) && <li>Plan features will appear after billing is configured.</li>}
-          </ul>
+          )}
+          {searchParams.checkout === 'cancelled' && (
+            <div className="rounded-xl px-4 py-3 text-sm mb-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--muted)' }}>
+              Checkout cancelled — no charge was made.
+            </div>
+          )}
+          <BillingPanel
+            currentPlan={user.membershipStatus}
+            hasSubscription={!!user.stripeSubscriptionId}
+            priceLabel={user.subscriptionPrice ? `$${user.subscriptionPrice.toString()}` : null}
+            interval={user.subscriptionInterval}
+            periodEnd={user.currentPeriodEnd ? user.currentPeriodEnd.toLocaleDateString('en-US') : null}
+            status={user.subscriptionStatus}
+          />
         </section>
       )}
 

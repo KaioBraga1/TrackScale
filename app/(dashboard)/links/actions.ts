@@ -8,6 +8,16 @@ import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{0,48}[a-z0-9]$|^[a-z0-9]$/
+
+// Smart links now live at the root (trackscaler.com/<slug>), so these reserved
+// words — which are real app routes or public files — can never be used as slugs.
+const RESERVED_SLUGS = new Set([
+  'dashboard', 'login', 'register', 'settings', 'campaigns', 'artists', 'links',
+  'tracking', 'fan-data', 'email', 'creatives', 'courses', 'refer', 'api', 'l',
+  'forgot-password', 'reset-password', 'admin', 'account', 'billing', 'pricing',
+  'terms', 'privacy', 'about', 'help', 'support', 'blog', 'docs', 'app', 'www',
+  'track.js', 'favicon.ico', 'robots.txt', 'sitemap.xml', '_next', 'public',
+])
 const VALID_THEMES = ['dark-navy', 'dark-purple', 'midnight', 'forest', 'ocean', 'crimson'] as const
 
 const customizationSchema = z.object({
@@ -33,7 +43,8 @@ const linkSchema = z.object({
     .string()
     .min(1, 'Slug is required')
     .max(50)
-    .regex(SLUG_REGEX, 'Slug: lowercase letters, numbers and hyphens only'),
+    .regex(SLUG_REGEX, 'Slug: lowercase letters, numbers and hyphens only')
+    .refine((s) => !RESERVED_SLUGS.has(s), 'This slug is reserved — pick another.'),
   coverUrl: z.string().url('Invalid URL').max(2048).optional().or(z.literal('')),
   theme: z.enum(VALID_THEMES).default('dark-navy'),
   spotifyArtistId: z.string().regex(/^[A-Za-z0-9]{22}$/).optional().or(z.literal('')),

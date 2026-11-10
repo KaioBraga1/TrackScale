@@ -54,12 +54,12 @@ async function getLink(slug: string) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const link = await getLink(params.slug)
-  if (!link) return { title: 'Link não encontrado' }
+  if (!link) return { title: 'Link not found' }
 
   const title = link.artist ? `${link.title} — ${link.artist}` : link.title
   const desc  = link.artist
-    ? `Ouça "${link.title}" de ${link.artist} na sua plataforma favorita`
-    : `Ouça "${link.title}" na sua plataforma favorita`
+    ? `Listen to "${link.title}" by ${link.artist} on your favorite platform`
+    : `Listen to "${link.title}" on your favorite platform`
 
   return {
     title,
@@ -189,7 +189,7 @@ export default async function SmartLinkPage({ params, searchParams }: PageProps)
               className="w-full px-4 py-2.5 rounded-xl text-center text-xs font-medium"
               style={{ backgroundColor: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#34d399' }}
             >
-              ✓ Conta Spotify conectada com sucesso!
+              ✓ Spotify account connected successfully!
             </div>
           )}
 

@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 
 const FROM = process.env.RESEND_FROM ?? 'TrackScaler <noreply@trackscale.com.br>'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://track-scale-r8j6.vercel.app'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.trackscaler.com'
 
 function getResend() {
   const key = process.env.RESEND_API_KEY

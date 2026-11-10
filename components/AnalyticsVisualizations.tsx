@@ -17,7 +17,12 @@ interface CountryRow {
   platforms: Array<{ platform: string; count: number }>
 }
 
-interface AnalyticsVisualizationsProps {
+interface FollowerPoint {
+  date: string
+  followers: number
+}
+
+interface Props {
   linkId: string
   period: 'today' | '7d' | '28d'
   daily: DailyPoint[]
@@ -27,115 +32,115 @@ interface AnalyticsVisualizationsProps {
   views: number
   clicks: number
   mode: 'consent' | 'total'
+  followerSnapshots?: FollowerPoint[]
 }
+
+type Metric = 'views' | 'clicks' | 'ctr' | 'followers'
+type BreakdownTab = 'sources' | 'countries' | 'platforms'
 
 const SOURCE_COLORS: Record<string, string> = {
   Instagram: '#e1306c',
-  Facebook:  '#1877f2',
-  Google:    '#4285f4',
-  TikTok:    '#ff0050',
-  YouTube:   '#ff0000',
+  Facebook: '#1877f2',
+  Google: '#4285f4',
+  TikTok: '#ff0050',
+  YouTube: '#ff0000',
   'X / Twitter': '#1d9bf0',
-  Direct:    '#a855f7',
+  Direct: '#a855f7',
 }
 
-function getSourceColor(source: string): string {
-  return SOURCE_COLORS[source] ?? '#6b7280'
+const PLATFORM_COLORS: Record<string, string> = {
+  Spotify: '#1db954',
+  'Apple Music': '#fc3c44',
+  'YouTube Music': '#ff0000',
+  Deezer: '#a238ff',
 }
 
-function AreaChart({ daily, maxValue }: { daily: DailyPoint[]; maxValue: number }) {
-  const W = Math.max(daily.length * 36, 360)
-  const H = 160
-  const PAD_T = 12
-  const PAD_B = 20
-  const chartH = H - PAD_T - PAD_B
+function fmt(v: number): string {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
+  if (v >= 10_000) return `${(v / 1_000).toFixed(0)}K`
+  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`
+  return v.toLocaleString('en-US')
+}
 
-  function toX(i: number) { return i * (W / Math.max(daily.length - 1, 1)) }
-  function toY(v: number) { return PAD_T + chartH - (v / maxValue) * chartH }
+function fmtAxis(v: number): string {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
+  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`
+  return String(Math.round(v))
+}
 
-  const viewPoints = daily.map((d, i) => `${toX(i)},${toY(d.views)}`).join(' ')
-  const clickPoints = daily.map((d, i) => `${toX(i)},${toY(d.clicks)}`).join(' ')
+function dateLabel(day: string): string {
+  const d = new Date(`${day}T12:00:00Z`)
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+}
 
-  const viewArea = `${toX(0)},${PAD_T + chartH} ${viewPoints} ${toX(daily.length - 1)},${PAD_T + chartH}`
-  const clickArea = `${toX(0)},${PAD_T + chartH} ${clickPoints} ${toX(daily.length - 1)},${PAD_T + chartH}`
+// ─── Bar chart ───────────────────────────────────────────────────────────────
+
+function BarChart({ daily, metric }: { daily: DailyPoint[]; metric: 'views' | 'clicks' }) {
+  const color = metric === 'views' ? '#a855f7' : '#34d399'
+  const values = daily.map(d => metric === 'views' ? d.views : d.clicks)
+  const maxV = Math.max(1, ...values)
+
+  const W = 760
+  const H = 180
+  const PL = 42
+  const PR = 8
+  const PT = 10
+  const PB = 28
+  const chartW = W - PL - PR
+  const chartH = H - PT - PB
+
+  const slotW = chartW / Math.max(daily.length, 1)
+  const barW = Math.min(slotW * 0.65, 32)
+
+  function bx(i: number) { return PL + i * slotW + (slotW - barW) / 2 }
+  function bh(v: number) { return Math.max(2, (v / maxV) * chartH) }
+  function by(v: number) { return PT + chartH - bh(v) }
+
+  const gridLevels = [0.75, 0.5, 0.25]
+  const labelStep = daily.length <= 7 ? 1 : daily.length <= 14 ? 2 : 7
 
   return (
-    <div className="overflow-x-auto">
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        role="img"
-        aria-label="Views and clicks by day"
-        style={{ width: '100%', minWidth: 320, height: 160 }}
-      >
-        <defs>
-          <linearGradient id="gViews" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#a855f7" stopOpacity="0.3"/>
-            <stop offset="100%" stopColor="#a855f7" stopOpacity="0.02"/>
-          </linearGradient>
-          <linearGradient id="gClicks" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#34d399" stopOpacity="0.25"/>
-            <stop offset="100%" stopColor="#34d399" stopOpacity="0.02"/>
-          </linearGradient>
-        </defs>
-
+    <div style={{ overflowX: 'auto', margin: '0 -4px' }}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', minWidth: 300, height: 180, display: 'block' }}>
         {/* Grid lines */}
-        {[0, 0.33, 0.66, 1].map((pct, i) => (
-          <line
-            key={i}
-            x1={0} x2={W}
-            y1={PAD_T + chartH * pct} y2={PAD_T + chartH * pct}
-            stroke="rgba(255,255,255,0.04)" strokeWidth="1"
-          />
-        ))}
-
-        {/* Area fills */}
-        <polygon points={viewArea} fill="url(#gViews)" />
-        <polygon points={clickArea} fill="url(#gClicks)" />
-
-        {/* Lines */}
-        <polyline
-          points={viewPoints}
-          fill="none"
-          stroke="#a855f7"
-          strokeWidth="2"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-        <polyline
-          points={clickPoints}
-          fill="none"
-          stroke="#34d399"
-          strokeWidth="2"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-
-        {/* Dots */}
-        {daily.map((d, i) => (
-          <g key={d.day}>
-            {d.views > 0 && (
-              <circle cx={toX(i)} cy={toY(d.views)} r="3" fill="#a855f7" stroke="rgba(5,5,10,0.8)" strokeWidth="1.5"/>
-            )}
-            {d.clicks > 0 && (
-              <circle cx={toX(i)} cy={toY(d.clicks)} r="3" fill="#34d399" stroke="rgba(5,5,10,0.8)" strokeWidth="1.5"/>
-            )}
-          </g>
-        ))}
-
-        {/* X axis labels */}
-        {daily.filter((_, i) => i % Math.max(1, Math.floor(daily.length / 7)) === 0).map((d, _, arr) => {
-          const idx = daily.indexOf(d)
+        {gridLevels.map((p, i) => {
+          const y = PT + chartH * (1 - p)
           return (
-            <text
-              key={d.day}
-              x={toX(idx)}
-              y={H - 4}
-              textAnchor="middle"
-              fill="rgba(255,255,255,0.3)"
-              fontSize="9"
-              fontFamily="system-ui"
-            >
-              {d.day.slice(5)}
+            <g key={i}>
+              <line x1={PL} y1={y} x2={W - PR} y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+              <text x={PL - 5} y={y + 3.5} textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="9.5" fontFamily="system-ui,-apple-system,sans-serif">
+                {fmtAxis(maxV * p)}
+              </text>
+            </g>
+          )
+        })}
+        {/* Baseline */}
+        <line x1={PL} y1={PT + chartH} x2={W - PR} y2={PT + chartH} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+
+        {/* Bars */}
+        {daily.map((d, i) => {
+          const v = metric === 'views' ? d.views : d.clicks
+          return (
+            <g key={d.day}>
+              <rect
+                className="chart-bar"
+                style={{ animationDelay: `${i * 22}ms` }}
+                x={bx(i)} y={by(v)} width={barW} height={bh(v)}
+                rx={Math.min(4, barW / 3)}
+                fill={v > 0 ? color : 'rgba(255,255,255,0.04)'}
+                opacity={v > 0 ? 0.9 : 1}
+              />
+              <title>{`${dateLabel(d.day)}: ${v.toLocaleString('en-US')}`}</title>
+            </g>
+          )
+        })}
+
+        {/* X-axis labels */}
+        {daily.map((d, i) => {
+          if (i % labelStep !== 0 && i !== daily.length - 1) return null
+          return (
+            <text key={d.day} x={bx(i) + barW / 2} y={H - 7} textAnchor="middle" fill="rgba(255,255,255,0.28)" fontSize="9.5" fontFamily="system-ui,-apple-system,sans-serif">
+              {dateLabel(d.day)}
             </text>
           )
         })}
@@ -143,6 +148,325 @@ function AreaChart({ daily, maxValue }: { daily: DailyPoint[]; maxValue: number 
     </div>
   )
 }
+
+// ─── CTR line chart ───────────────────────────────────────────────────────────
+
+function CTRLineChart({ daily }: { daily: DailyPoint[] }) {
+  const values = daily.map(d => d.views > 0 ? (d.clicks / d.views) * 100 : 0)
+  const maxV = Math.max(1, ...values)
+
+  const W = 760
+  const H = 180
+  const PL = 42
+  const PR = 8
+  const PT = 10
+  const PB = 28
+  const chartW = W - PL - PR
+  const chartH = H - PT - PB
+
+  const slotW = chartW / Math.max(daily.length - 1, 1)
+  function px(i: number) { return PL + i * slotW }
+  function py(v: number) { return PT + chartH - (v / maxV) * chartH }
+
+  const linePts = values.map((v, i) => `${px(i)},${py(v)}`).join(' ')
+  const areaPts = `${px(0)},${PT + chartH} ${linePts} ${px(daily.length - 1)},${PT + chartH}`
+
+  const gridLevels = [0.75, 0.5, 0.25]
+  const labelStep = daily.length <= 7 ? 1 : 7
+
+  return (
+    <div style={{ overflowX: 'auto', margin: '0 -4px' }}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', minWidth: 300, height: 180, display: 'block' }}>
+        <defs>
+          <linearGradient id="ctrGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+        {gridLevels.map((p, i) => {
+          const y = PT + chartH * (1 - p)
+          return (
+            <g key={i}>
+              <line x1={PL} y1={y} x2={W - PR} y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+              <text x={PL - 5} y={y + 3.5} textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="9.5" fontFamily="system-ui">
+                {`${(maxV * p).toFixed(1)}%`}
+              </text>
+            </g>
+          )
+        })}
+        <line x1={PL} y1={PT + chartH} x2={W - PR} y2={PT + chartH} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+        <polygon className="chart-area" points={areaPts} fill="url(#ctrGrad)" />
+        <polyline className="chart-line" style={{ ['--path-len' as string]: 1800 } as React.CSSProperties} points={linePts} fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        {values.map((v, i) => v > 0 && (
+          <circle key={i} cx={px(i)} cy={py(v)} r="3.5" fill="#f59e0b" stroke="rgba(5,5,10,0.8)" strokeWidth="1.5">
+            <title>{`${dateLabel(daily[i].day)}: ${v.toFixed(1)}%`}</title>
+          </circle>
+        ))}
+        {daily.map((d, i) => {
+          if (i % labelStep !== 0 && i !== daily.length - 1) return null
+          return (
+            <text key={d.day} x={px(i)} y={H - 7} textAnchor="middle" fill="rgba(255,255,255,0.28)" fontSize="9.5" fontFamily="system-ui">
+              {dateLabel(d.day)}
+            </text>
+          )
+        })}
+      </svg>
+    </div>
+  )
+}
+
+// ─── Follower line chart ──────────────────────────────────────────────────────
+
+function FollowerLineChart({ snapshots }: { snapshots: FollowerPoint[] }) {
+  if (snapshots.length === 0) {
+    return <EmptyState text="No follower data available. Connect Spotify and sync a playlist to track growth." />
+  }
+
+  const values = snapshots.map(s => s.followers)
+  const maxV = Math.max(1, ...values)
+  const minV = Math.min(...values)
+  const range = Math.max(1, maxV - minV)
+
+  const W = 760
+  const H = 180
+  const PL = 54
+  const PR = 8
+  const PT = 10
+  const PB = 28
+  const chartW = W - PL - PR
+  const chartH = H - PT - PB
+
+  const slotW = chartW / Math.max(snapshots.length - 1, 1)
+  function px(i: number) { return PL + i * slotW }
+  function py(v: number) { return PT + chartH - ((v - minV) / range) * chartH }
+
+  const linePts = values.map((v, i) => `${px(i)},${py(v)}`).join(' ')
+  const areaPts = `${px(0)},${PT + chartH} ${linePts} ${px(snapshots.length - 1)},${PT + chartH}`
+  const labelStep = Math.max(1, Math.floor(snapshots.length / 4))
+
+  return (
+    <div style={{ overflowX: 'auto', margin: '0 -4px' }}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', minWidth: 300, height: 180, display: 'block' }}>
+        <defs>
+          <linearGradient id="follGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+        {[0.75, 0.5, 0.25].map((p, i) => {
+          const v = minV + range * p
+          const y = PT + chartH * (1 - p)
+          return (
+            <g key={i}>
+              <line x1={PL} y1={y} x2={W - PR} y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+              <text x={PL - 5} y={y + 3.5} textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="9.5" fontFamily="system-ui">
+                {fmt(Math.round(v))}
+              </text>
+            </g>
+          )
+        })}
+        <line x1={PL} y1={PT + chartH} x2={W - PR} y2={PT + chartH} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+        <polygon className="chart-area" points={areaPts} fill="url(#follGrad)" />
+        <polyline className="chart-line" style={{ ['--path-len' as string]: 1800 } as React.CSSProperties} points={linePts} fill="none" stroke="#38bdf8" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        {snapshots.length > 0 && (
+          <circle cx={px(snapshots.length - 1)} cy={py(values[values.length - 1])} r="4.5" fill="#38bdf8" stroke="rgba(5,5,10,0.8)" strokeWidth="2">
+            <title>{`${snapshots[snapshots.length - 1].date}: ${values[values.length - 1].toLocaleString('en-US')} followers`}</title>
+          </circle>
+        )}
+        {snapshots.map((s, i) => {
+          if (i % labelStep !== 0 && i !== snapshots.length - 1) return null
+          return (
+            <text key={s.date} x={px(i)} y={H - 7} textAnchor="middle" fill="rgba(255,255,255,0.28)" fontSize="9.5" fontFamily="system-ui">
+              {dateLabel(s.date)}
+            </text>
+          )
+        })}
+      </svg>
+    </div>
+  )
+}
+
+// ─── Metric card ─────────────────────────────────────────────────────────────
+
+function MetricCard({
+  label, value, subLabel, color, selected, onClick,
+}: {
+  label: string
+  value: string | number
+  subLabel?: string
+  color: string
+  selected: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        textAlign: 'left',
+        padding: '14px 16px',
+        borderRadius: 14,
+        cursor: 'pointer',
+        transition: 'all 0.15s ease',
+        background: selected ? `${color}0d` : 'rgba(255,255,255,0.025)',
+        border: selected ? `1.5px solid ${color}50` : '1.5px solid rgba(255,255,255,0.06)',
+        boxShadow: selected ? `0 0 24px ${color}18, inset 0 1px 0 ${color}25` : 'none',
+        width: '100%',
+      }}
+    >
+      <p style={{
+        fontSize: 10.5, fontWeight: 600, letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: selected ? color : 'rgba(255,255,255,0.35)',
+        marginBottom: 6,
+      }}>
+        {label}
+      </p>
+      <p style={{
+        fontSize: 26, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1,
+        color: selected ? color : 'var(--text)',
+      }}>
+        {typeof value === 'number' ? fmt(value) : value}
+      </p>
+      {subLabel && (
+        <p style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>{subLabel}</p>
+      )}
+    </button>
+  )
+}
+
+// ─── Breakdown helpers ────────────────────────────────────────────────────────
+
+function ProgressBar({ label, pct, color }: { label: string; pct: number; color: string }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--muted)', marginBottom: 4 }}>
+        <span>{label}</span><span>{pct}%</span>
+      </div>
+      <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.05)' }}>
+        <div style={{ height: 4, borderRadius: 2, width: `${pct}%`, background: `linear-gradient(90deg, ${color}, ${color}80)`, transition: 'width 0.5s ease' }} />
+      </div>
+    </div>
+  )
+}
+
+function EmptyState({ text }: { text: string }) {
+  return <p style={{ color: 'var(--muted)', textAlign: 'center', padding: '32px 0', fontSize: 14 }}>{text}</p>
+}
+
+function SourcesTab({ sources, views, clicks }: {
+  sources: Array<{ source: string; visits: number; clicks: number }>
+  views: number
+  clicks: number
+}) {
+  if (!sources.length) return <EmptyState text="No traffic source data for this period." />
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {sources.map(s => {
+        const visitPct = views ? Math.round((s.visits / views) * 100) : 0
+        const clickPct = clicks ? Math.round((s.clicks / clicks) * 100) : 0
+        const ctr = s.visits ? Math.round((s.clicks / s.visits) * 1000) / 10 : 0
+        const color = SOURCE_COLORS[s.source] ?? '#6b7280'
+        return (
+          <div key={s.source}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, display: 'inline-block', flexShrink: 0, boxShadow: `0 0 6px ${color}60` }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{s.source}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 6, fontSize: 11.5, flexWrap: 'wrap' }}>
+                <span style={{ padding: '2px 8px', borderRadius: 6, background: 'rgba(129,140,248,0.08)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.15)' }}>
+                  {s.visits.toLocaleString('en-US')} views
+                </span>
+                <span style={{ padding: '2px 8px', borderRadius: 6, background: 'rgba(52,211,153,0.08)', color: '#34d399', border: '1px solid rgba(52,211,153,0.15)' }}>
+                  {s.clicks.toLocaleString('en-US')} clicks
+                </span>
+                <span style={{ padding: '2px 8px', borderRadius: 6, background: 'rgba(245,158,11,0.08)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.15)' }}>
+                  {ctr}% CTR
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <ProgressBar label="Views share" pct={visitPct} color={color} />
+              <ProgressBar label="Clicks share" pct={clickPct} color="#34d399" />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function CountriesTab({ countries }: { countries: CountryRow[] }) {
+  const [expanded, setExpanded] = useState(false)
+  if (!countries.length) return <EmptyState text="No geographic data for this period." />
+
+  const totalVisits = countries.reduce((s, c) => s + c.visits, 0)
+  const displayed = expanded ? countries : countries.slice(0, 10)
+
+  return (
+    <div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {displayed.map(c => {
+          const pct = totalVisits ? Math.round((c.visits / totalVisits) * 100) : 0
+          const ctr = c.visits ? Math.round((c.clicks / c.visits) * 100) : 0
+          return (
+            <div key={c.country}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
+                <span style={{ fontSize: 13.5, color: 'var(--text)', fontWeight: 500 }}>{c.country}</span>
+                <div style={{ display: 'flex', gap: 10, fontSize: 12, color: 'var(--muted)', alignItems: 'center' }}>
+                  <span>{c.visits.toLocaleString('en-US')} views</span>
+                  {c.clicks > 0 && <span style={{ color: '#34d399' }}>{c.clicks} clicks</span>}
+                  <span style={{ color: '#f59e0b', fontWeight: 600, minWidth: 32, textAlign: 'right' }}>{ctr}%</span>
+                  <span style={{ minWidth: 28, textAlign: 'right', opacity: 0.5 }}>{pct}%</span>
+                </div>
+              </div>
+              <div style={{ height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.05)' }}>
+                <div style={{ height: 5, borderRadius: 3, width: `${pct}%`, background: 'linear-gradient(90deg, #a855f7, #818cf8)', transition: 'width 0.5s ease' }} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      {countries.length > 10 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          style={{ marginTop: 16, fontSize: 12, color: '#a855f7', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          {expanded ? 'Show less' : `Show all ${countries.length} countries →`}
+        </button>
+      )}
+    </div>
+  )
+}
+
+function PlatformsTab({ platforms, clicks }: { platforms: Array<{ name: string; count: number }>; clicks: number }) {
+  if (!platforms.length) return <EmptyState text="No platform clicks yet." />
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {platforms.map(p => {
+        const pct = clicks ? Math.round((p.count / clicks) * 100) : 0
+        const color = PLATFORM_COLORS[p.name] ?? '#a855f7'
+        return (
+          <div key={p.name}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, marginBottom: 5 }}>
+              <span style={{ color: 'var(--text)', fontWeight: 600 }}>{p.name}</span>
+              <span style={{ color: 'var(--muted)' }}>
+                {p.count.toLocaleString('en-US')} clicks · <span style={{ color }}>{pct}%</span>
+              </span>
+            </div>
+            <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.05)' }}>
+              <div style={{ height: 6, borderRadius: 3, width: `${pct}%`, background: `linear-gradient(90deg, ${color}, ${color}80)`, transition: 'width 0.5s ease' }} />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AnalyticsVisualizations({
   linkId,
@@ -154,365 +478,126 @@ export default function AnalyticsVisualizations({
   views,
   clicks,
   mode,
-}: AnalyticsVisualizationsProps) {
-  const [countryDialogOpen, setCountryDialogOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<'overview' | 'sources' | 'geo' | 'platforms'>('overview')
+  followerSnapshots = [],
+}: Props) {
+  const [metric, setMetric] = useState<Metric>('views')
+  const [tab, setTab] = useState<BreakdownTab>('sources')
 
-  const maxValue = Math.max(1, ...daily.flatMap((d) => [d.views, d.clicks]))
-  const totalVisits = countries.reduce((sum, c) => sum + c.visits, 0)
-  const totalClicks = countries.reduce((sum, c) => sum + c.clicks, 0)
-  const hasActivity = daily.some((d) => d.views || d.clicks)
+  const ctr = views > 0 ? Math.round((clicks / views) * 1000) / 10 : 0
+  const latestFollowers = followerSnapshots.length > 0
+    ? followerSnapshots[followerSnapshots.length - 1].followers
+    : null
 
-  const TABS = [
-    { id: 'overview',  label: 'Overview' },
-    { id: 'sources',   label: 'Traffic Sources' },
-    { id: 'geo',       label: 'Geographic' },
+  const METRICS: Array<{ id: Metric; label: string; value: string | number; sub?: string; color: string; show: boolean }> = [
+    { id: 'views', label: 'Views', value: views, color: '#a855f7', show: true },
+    { id: 'clicks', label: 'Platform Clicks', value: clicks, color: '#34d399', show: true },
+    { id: 'ctr', label: 'Click Rate', value: `${ctr}%`, sub: 'views → clicks', color: '#f59e0b', show: true },
+    { id: 'followers', label: 'Followers', value: latestFollowers ?? '—', sub: 'Spotify playlist', color: '#38bdf8', show: latestFollowers !== null },
+  ]
+
+  const TABS: Array<{ id: BreakdownTab; label: string }> = [
+    { id: 'sources', label: 'Traffic Sources' },
+    { id: 'countries', label: 'Countries' },
     { id: 'platforms', label: 'Platforms' },
-  ] as const
+  ]
+
+  const chartLabels: Record<Metric, string> = {
+    views: 'Views over time',
+    clicks: 'Platform clicks over time',
+    ctr: 'Click rate over time',
+    followers: 'Follower growth',
+  }
 
   return (
-    <div className="space-y-5">
-      {/* Tab navigation */}
-      <div
-        className="flex gap-1 p-1 rounded-xl w-fit"
-        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* ── Metric cards ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${METRICS.filter(m => m.show).length}, 1fr)`, gap: 10 }}
+        className="analytics-metric-grid"
       >
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className="text-xs px-3.5 py-1.5 rounded-lg font-medium transition-all duration-150"
-            style={activeTab === tab.id ? {
-              background: 'rgba(168,85,247,0.15)',
-              color: '#c084fc',
-              border: '1px solid rgba(168,85,247,0.3)',
-              boxShadow: '0 0 12px rgba(168,85,247,0.1)',
-            } : {
-              color: 'var(--muted)',
-              background: 'transparent',
-              border: '1px solid transparent',
-            }}
-          >
-            {tab.label}
-          </button>
+        {METRICS.filter(m => m.show).map(m => (
+          <MetricCard
+            key={m.id}
+            label={m.label}
+            value={m.value}
+            subLabel={m.sub}
+            color={m.color}
+            selected={metric === m.id}
+            onClick={() => setMetric(m.id)}
+          />
         ))}
       </div>
 
-      {/* Overview tab */}
-      {activeTab === 'overview' && (
-        <section
-          className="rounded-2xl p-5 space-y-4"
-          style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(12px)' }}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Views &amp; Clicks</h2>
-            <div className="flex gap-4 text-xs" style={{ color: 'var(--muted)' }}>
-              <span className="flex items-center gap-1.5">
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#a855f7', display: 'inline-block' }}/>
-                Views
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', display: 'inline-block' }}/>
-                Clicks
-              </span>
-            </div>
-          </div>
-
-          {hasActivity ? (
-            <AreaChart daily={daily} maxValue={maxValue} />
-          ) : (
-            <div className="py-12 text-center">
-              <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--muted)' }}>
-                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>No data for this period.</p>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Traffic Sources tab */}
-      {activeTab === 'sources' && (
-        <section
-          className="rounded-2xl p-5 space-y-5"
-          style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(12px)' }}
-        >
-          <div>
-            <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Traffic Sources</h2>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
-              Based on UTM parameters and referrer headers. Clicks can exceed views when visitors open multiple platforms.
-            </p>
-          </div>
-
-          {sources.length ? (
-            <div className="space-y-4">
-              {sources.map((source) => {
-                const visitPercent = views ? Math.round((source.visits / views) * 100) : 0
-                const clickPercent = clicks ? Math.round((source.clicks / clicks) * 100) : 0
-                const ctr = source.visits ? Math.round((source.clicks / source.visits) * 1000) / 10 : 0
-                const color = getSourceColor(source.source)
-
-                return (
-                  <div key={source.source} className="space-y-2">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <span
-                          style={{
-                            width: 10, height: 10, borderRadius: '50%',
-                            background: color, display: 'inline-block', flexShrink: 0,
-                            boxShadow: `0 0 6px ${color}60`,
-                          }}
-                        />
-                        <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>{source.source}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--muted)' }}>
-                        <span
-                          className="px-2 py-0.5 rounded-md"
-                          style={{ background: 'rgba(129,140,248,0.08)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.15)' }}
-                        >
-                          {source.visits} views
-                        </span>
-                        <span
-                          className="px-2 py-0.5 rounded-md"
-                          style={{ background: 'rgba(52,211,153,0.08)', color: '#34d399', border: '1px solid rgba(52,211,153,0.15)' }}
-                        >
-                          {source.clicks} clicks
-                        </span>
-                        <span style={{ color: 'var(--muted)' }}>{ctr}% CTR</span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--muted)' }}>
-                          <span>Views share</span><span>{visitPercent}%</span>
-                        </div>
-                        <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                          <div
-                            className="h-1.5 rounded-full transition-all duration-500"
-                            style={{ width: `${visitPercent}%`, background: `linear-gradient(90deg, ${color}, ${color}80)` }}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--muted)' }}>
-                          <span>Clicks share</span><span>{clickPercent}%</span>
-                        </div>
-                        <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                          <div
-                            className="h-1.5 rounded-full transition-all duration-500"
-                            style={{ width: `${clickPercent}%`, background: 'linear-gradient(90deg, #34d399, #34d39980)' }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <p className="py-8 text-center text-sm" style={{ color: 'var(--muted)' }}>No traffic source data for this period.</p>
-          )}
-        </section>
-      )}
-
-      {/* Geographic tab */}
-      {activeTab === 'geo' && (
-        <section
-          className="rounded-2xl p-5 space-y-4"
-          style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(12px)' }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Geographic Breakdown</h2>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{countries.length} countries</p>
-            </div>
-            <button
-              type="button"
-              className="btn-ghost text-xs"
-              onClick={() => setCountryDialogOpen(true)}
-              aria-label="Expand country breakdown"
-            >
-              Expand all
-            </button>
-          </div>
-
-          {countries.length ? (
-            <div className="space-y-3">
-              {countries.slice(0, 8).map((country) => {
-                const pct = totalVisits ? Math.round((country.visits / totalVisits) * 100) : 0
-                return (
-                  <div key={country.country}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm" style={{ color: 'var(--text)' }}>{country.country}</span>
-                      <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--muted)' }}>
-                        <span>{country.visits.toLocaleString('en-US')} views</span>
-                        <span style={{ opacity: 0.5 }}>·</span>
-                        <span>{pct}%</span>
-                      </div>
-                    </div>
-                    <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                      <div
-                        className="h-1.5 rounded-full transition-all duration-500"
-                        style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #a855f7, #818cf8)' }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <p className="py-8 text-center text-sm" style={{ color: 'var(--muted)' }}>No geographic data.</p>
-          )}
-        </section>
-      )}
-
-      {/* Platforms tab */}
-      {activeTab === 'platforms' && (
-        <section
-          className="rounded-2xl p-5 space-y-4"
-          style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(12px)' }}
-        >
-          <div>
-            <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Platform Clicks Breakdown</h2>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>Where visitors choose to listen</p>
-          </div>
-
-          {platforms.length ? (
-            <div className="space-y-4">
-              {platforms.map((item) => {
-                const percent = clicks ? Math.round((item.count / clicks) * 100) : 0
-                const platformColors: Record<string, string> = {
-                  Spotify: '#1db954', 'Apple Music': '#fc3c44',
-                  'YouTube Music': '#ff0000', Deezer: '#a238ff',
-                }
-                const color = platformColors[item.name] ?? '#a855f7'
-                return (
-                  <div key={item.name} className="space-y-1.5">
-                    <div className="flex items-center justify-between text-sm">
-                      <span style={{ color: 'var(--text)' }}>{item.name}</span>
-                      <span style={{ color: 'var(--muted)' }}>{item.count.toLocaleString('en-US')} · {percent}%</span>
-                    </div>
-                    <div className="h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                      <div
-                        className="h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${percent}%`, background: `linear-gradient(90deg, ${color}, ${color}80)` }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <p className="py-8 text-center text-sm" style={{ color: 'var(--muted)' }}>No platform clicks yet.</p>
-          )}
-        </section>
-      )}
-
-      {/* Country Dialog */}
-      {countryDialogOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}
-          role="presentation"
-          onMouseDown={(e) => { if (e.target === e.currentTarget) setCountryDialogOpen(false) }}
-        >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="country-dialog-title"
-            className="max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl p-6"
-            style={{
-              background: 'rgba(12,12,20,0.95)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(24px)',
-              boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
-            }}
-          >
-            <header className="mb-5 flex items-center justify-between gap-3">
-              <div>
-                <h2 id="country-dialog-title" className="text-lg font-semibold" style={{ color: 'var(--text)' }}>
-                  Country Breakdown
-                </h2>
-                <div className="mt-2 inline-flex rounded-lg p-0.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)' }}>
-                  {(['consent', 'total'] as const).map((value) => (
-                    <a
-                      key={value}
-                      href={`/links/${linkId}?${new URLSearchParams({ mode: value, period })}`}
-                      aria-current={mode === value ? 'page' : undefined}
-                      className="rounded-md px-3 py-1 text-xs transition-all"
-                      style={mode === value
-                        ? { background: 'rgba(168,85,247,0.15)', color: '#c084fc', border: '1px solid rgba(168,85,247,0.3)' }
-                        : { color: 'var(--muted)', border: '1px solid transparent' }}
-                    >
-                      {value === 'consent' ? 'Consent' : 'Total'}
-                    </a>
-                  ))}
-                </div>
-              </div>
-              <button
-                type="button"
-                className="btn-ghost w-8 h-8 p-0 rounded-lg"
-                onClick={() => setCountryDialogOpen(false)}
-                aria-label="Close dialog"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4">
-                  <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </button>
-            </header>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    {['Country', 'Views', 'Clicks', 'CTR'].map((h) => (
-                      <th key={h} className="py-2 text-left text-xs font-medium" style={{ color: 'var(--muted)' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {countries.map((country) => (
-                    <tr key={country.country} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                      <td colSpan={4} className="p-0">
-                        <details>
-                          <summary className="grid cursor-pointer grid-cols-4 gap-2 py-2.5 hover:bg-white/[0.02] rounded-lg px-1" style={{ color: 'var(--text)' }}>
-                            <span>{country.country}</span>
-                            <span>{country.visits}</span>
-                            <span>{country.clicks}</span>
-                            <span style={{ color: 'var(--muted)' }}>
-                              {country.visits ? (country.clicks / country.visits * 100).toFixed(1) : '0.0'}%
-                            </span>
-                          </summary>
-                          {country.platforms.length > 0 && (
-                            <div className="mb-2 ml-4 pl-3 py-2 space-y-1" style={{ borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
-                              <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Platforms</p>
-                              {country.platforms.map((p) => (
-                                <div key={p.platform} className="flex justify-between text-xs py-0.5" style={{ color: 'var(--muted)' }}>
-                                  <span>{p.platform}</span><span>{p.count}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </details>
-                      </td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <td className="py-2.5 font-semibold text-sm" style={{ color: 'var(--text)' }}>Total</td>
-                    <td className="py-2.5 font-semibold">{totalVisits}</td>
-                    <td className="py-2.5 font-semibold">{totalClicks}</td>
-                    <td className="py-2.5 text-sm" style={{ color: 'var(--muted)' }}>
-                      {totalVisits ? (totalClicks / totalVisits * 100).toFixed(1) : '0.0'}%
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
+      {/* ── Chart panel ── */}
+      <div style={{
+        borderRadius: 16,
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        backdropFilter: 'blur(12px)',
+        padding: '20px 20px 12px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{chartLabels[metric]}</span>
+          <span style={{ fontSize: 11.5, color: 'var(--muted)' }}>
+            {period === 'today' ? 'Today' : period === '7d' ? 'Last 7 days' : 'Last 28 days'}
+          </span>
         </div>
-      )}
+
+        {metric === 'views' && <BarChart daily={daily} metric="views" />}
+        {metric === 'clicks' && <BarChart daily={daily} metric="clicks" />}
+        {metric === 'ctr' && <CTRLineChart daily={daily} />}
+        {metric === 'followers' && <FollowerLineChart snapshots={followerSnapshots} />}
+
+        {/* Legend */}
+        {(metric === 'views' || metric === 'clicks') && (
+          <div style={{ marginTop: 10, display: 'flex', gap: 16 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: 'var(--muted)' }}>
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: metric === 'views' ? '#a855f7' : '#34d399', display: 'inline-block' }} />
+              {metric === 'views' ? 'Page views' : 'Platform clicks'}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* ── Breakdown panel ── */}
+      <div style={{
+        borderRadius: 16,
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        backdropFilter: 'blur(12px)',
+        overflow: 'hidden',
+      }}>
+        {/* Tab nav */}
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--glass-border)' }}>
+          {TABS.map(t => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              style={{
+                padding: '12px 18px',
+                fontSize: 13,
+                fontWeight: tab === t.id ? 600 : 400,
+                color: tab === t.id ? 'var(--text)' : 'var(--muted)',
+                background: 'none',
+                border: 'none',
+                borderBottom: tab === t.id ? '2px solid #a855f7' : '2px solid transparent',
+                cursor: 'pointer',
+                transition: 'color 0.15s ease',
+                whiteSpace: 'nowrap',
+              } as React.CSSProperties}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab content */}
+        <div style={{ padding: 20 }}>
+          {tab === 'sources' && <SourcesTab sources={sources} views={views} clicks={clicks} />}
+          {tab === 'countries' && <CountriesTab countries={countries} />}
+          {tab === 'platforms' && <PlatformsTab platforms={platforms} clicks={clicks} />}
+        </div>
+      </div>
     </div>
   )
 }

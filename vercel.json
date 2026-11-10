@@ -4,5 +4,11 @@
   "installCommand": "npm install",
   "env": {
     "NEXT_TELEMETRY_DISABLED": "1"
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/playlist-followers",
+      "schedule": "0 6 * * *"
+    }
+  ]
 }

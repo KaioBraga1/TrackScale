@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { toggleLinkActive } from '../links/actions'
 import CopyButton from '@/components/CopyButton'
 import DeleteLinkButton from '@/components/DeleteLinkButton'
+import CountUp from '@/components/motion/CountUp'
+import CreateMenu from '@/components/CreateMenu'
 
 export const metadata = { title: 'Dashboard' }
 
@@ -92,12 +94,7 @@ export default async function DashboardPage({
             Dashboard
           </h1>
         </div>
-        <Link href="/links/new" className="btn-primary gap-1.5">
-          <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-          </svg>
-          New Smart Link
-        </Link>
+        <CreateMenu />
       </div>
 
       {/* Stats */}
@@ -122,7 +119,9 @@ export default async function DashboardPage({
         />
         <GlassStatCard
           label="Avg Click Rate"
-          value={`${avgCtr}%`}
+          value={avgCtr}
+          suffix="%"
+          decimals={1}
           icon="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
           color="#f59e0b"
           accent
@@ -160,7 +159,7 @@ export default async function DashboardPage({
             const realClicks = clickMap.get(link.id) ?? 0
             const views      = viewMap.get(link.id) ?? 0
             const ctr        = views ? Math.round((realClicks / views) * 1000) / 10 : 0
-            const fullUrl    = `${appUrl}/l/${link.slug}`
+            const fullUrl    = `${appUrl}/${link.slug}`
 
             return (
               <div
@@ -198,7 +197,7 @@ export default async function DashboardPage({
                   </div>
 
                   <div className="mt-2 flex items-center gap-2">
-                    <span className="font-mono text-xs truncate" style={{ color: 'var(--muted)' }}>/l/{link.slug}</span>
+                    <span className="font-mono text-xs truncate" style={{ color: 'var(--muted)' }}>/{link.slug}</span>
                     <CopyButton text={fullUrl} />
                   </div>
 
@@ -226,7 +225,7 @@ export default async function DashboardPage({
                         <svg viewBox="0 0 24 24" fill="none" className="w-3 h-3">
                           <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z" stroke="currentColor" strokeWidth="1.5"/>
                         </svg>
-                        {views.toLocaleString('en-US')} views
+                        <CountUp value={views} />&nbsp;views
                       </span>
                       <span
                         className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg"
@@ -235,7 +234,7 @@ export default async function DashboardPage({
                         <svg viewBox="0 0 24 24" fill="none" className="w-3 h-3">
                           <path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
-                        {realClicks.toLocaleString('en-US')} clicks
+                        <CountUp value={realClicks} />&nbsp;clicks
                       </span>
                       {ctr > 0 && (
                         <span
@@ -275,19 +274,23 @@ export default async function DashboardPage({
 function GlassStatCard({
   label,
   value,
+  suffix = '',
+  decimals = 0,
   icon,
   color,
   accent = false,
 }: {
   label: string
-  value: number | string
+  value: number
+  suffix?: string
+  decimals?: number
   icon: string
   color: string
   accent?: boolean
 }) {
   return (
     <div
-      className="rounded-2xl p-5 relative overflow-hidden"
+      className="lift-card rounded-2xl p-5 relative overflow-hidden"
       style={{
         background: `linear-gradient(135deg, ${color}08 0%, rgba(255,255,255,0.02) 100%)`,
         border: `1px solid ${color}18`,
@@ -320,12 +323,13 @@ function GlassStatCard({
           <path d={icon} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
-      <p
+      <CountUp
+        value={value}
+        suffix={suffix}
+        decimals={decimals}
         className="font-outfit font-bold"
-        style={{ fontSize: 26, letterSpacing: '-0.03em', color: accent ? color : 'var(--text)', lineHeight: 1 }}
-      >
-        {typeof value === 'number' ? value.toLocaleString('en-US') : value}
-      </p>
+        style={{ fontSize: 26, letterSpacing: '-0.03em', color: accent ? color : 'var(--text)', lineHeight: 1, display: 'inline-block' }}
+      />
       <p className="text-xs mt-1.5" style={{ color: 'var(--muted)' }}>{label}</p>
     </div>
   )
