@@ -21,6 +21,7 @@ const clickSchema = z.object({
   utmTerm: z.string().max(200).optional().nullable(),
   fbclid: z.string().max(500).optional().nullable(),
   gclid: z.string().max(500).optional().nullable(),
+  referrer: z.string().max(2048).optional().nullable(),
 })
 
 export async function POST(req: NextRequest) {
@@ -61,6 +62,7 @@ export async function POST(req: NextRequest) {
     utmTerm,
     fbclid,
     gclid,
+    referrer: clientReferrer,
   } = parsed.data
 
   if (fingerprint) {
@@ -166,7 +168,9 @@ export async function POST(req: NextRequest) {
             browser: parseBrowser(ua),
             os: parseOS(ua),
             device: parseDevice(ua),
-            referrer: req.headers.get('referer') ?? null,
+            // Real external referrer (document.referrer from the browser), not the
+            // HTTP referer header — which would always be the smart-link page itself.
+            referrer: clientReferrer ?? req.headers.get('referer') ?? null,
             botScore,
             consentStatus,
             country: geo?.country ?? null,

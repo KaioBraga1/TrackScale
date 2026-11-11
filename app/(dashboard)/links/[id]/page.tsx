@@ -242,17 +242,20 @@ export default async function LinkStatsPage({
   for (const visitor of visitorGeoRaw) {
     const countryName = visitor.country ?? 'Unknown'
     const country = geographic.get(countryName) ?? { visits: 0, clicks: 0, latitudes: [], longitudes: [], platforms: new Map<string, number>() }
-    country.visits += 1
     if (visitor.latitude !== null) country.latitudes.push(visitor.latitude)
     if (visitor.longitude !== null) country.longitudes.push(visitor.longitude)
     const sourceName = classifySource(visitor.utmSource, visitor.referrer)
     const source = sourceStats.get(sourceName) ?? { visits: 0, clicks: 0 }
-    source.visits += 1
+    // Count VIEWS (page-view events) and CLICKS (platform-click events) consistently,
+    // so CTR = clicks / views is meaningful (not "visitor count" vs "event count").
     for (const click of visitor.clicks) {
-      if (click.eventType !== 'PLATFORM_CLICK') continue
-      country.clicks += 1; source.clicks += 1
-      const platform = click.platform ?? 'unknown'
-      country.platforms.set(platform, (country.platforms.get(platform) ?? 0) + 1)
+      if (click.eventType === 'LINK_VIEW') {
+        country.visits += 1; source.visits += 1
+      } else if (click.eventType === 'PLATFORM_CLICK') {
+        country.clicks += 1; source.clicks += 1
+        const platform = click.platform ?? 'unknown'
+        country.platforms.set(platform, (country.platforms.get(platform) ?? 0) + 1)
+      }
     }
     geographic.set(countryName, country)
     sourceStats.set(sourceName, source)
@@ -578,6 +581,9 @@ function classifySource(utmSource: string | null, referrer: string | null): stri
     return src.charAt(0).toUpperCase() + src.slice(1)
   }
   if (ref) {
+    // Referrer that is the smart link's own domain = the visitor opened it directly
+    // (typed, bookmark, messaging app, or same-site navigation) → Direct.
+    if (ref.includes('trackscaler.com') || ref.includes('track-scale-r8j6.vercel.app') || ref.includes('localhost')) return 'Direct'
     if (ref.includes('instagram.com') || ref.includes('l.instagram.com')) return 'Instagram'
     if (ref.includes('facebook.com') || ref.includes('l.facebook.com') || ref.includes('fb.gg')) return 'Facebook'
     if (ref.includes('google.')) return 'Google'

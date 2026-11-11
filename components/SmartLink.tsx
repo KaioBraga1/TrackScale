@@ -121,6 +121,7 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
       fingerprint: savedConsent === 'GRANTED' ? clientData.fingerprint : null,
       consentStatus: savedConsent,
       visitorId: storedVid ?? null,
+      referrer: typeof document !== 'undefined' ? document.referrer || null : null,
       ...utmData,
     }
 
