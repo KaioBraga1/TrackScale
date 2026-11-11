@@ -13,9 +13,8 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get('error')
   const state = searchParams.get('state')
 
-  if (error || !code) {
-    redirect(`/campaigns?error=${error ?? 'meta_denied'}`)
-  }
+  if (error) redirect('/campaigns?error=meta_oauth_denied')
+  if (!code) redirect('/campaigns?error=missing_oauth_code')
 
   // Validate state
   const cookieState = request.cookies.get('meta_oauth_state')?.value

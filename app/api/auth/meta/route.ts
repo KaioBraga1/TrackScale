@@ -7,7 +7,7 @@ export async function GET() {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
-  if (!process.env.META_APP_ID) {
+  if (!process.env.META_APP_ID || !process.env.META_APP_SECRET) {
     redirect('/campaigns?error=meta_not_configured')
   }
 

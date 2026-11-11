@@ -1,4 +1,4 @@
-const API_VERSION = 'v18.0'
+const API_VERSION = 'v27.0'
 const BASE = `https://graph.facebook.com/${API_VERSION}`
 
 async function metaFetch<T>(endpoint: string, token: string, params?: Record<string, string>): Promise<T> {
@@ -21,7 +21,7 @@ export function getMetaOAuthUrl(state: string): string {
     response_type: 'code',
     state,
   })
-  return `https://www.facebook.com/v18.0/dialog/oauth?${params}`
+  return `https://www.facebook.com/${API_VERSION}/dialog/oauth?${params}`
 }
 
 export async function exchangeCodeForToken(code: string): Promise<{ access_token: string; token_type: string; expires_in?: number }> {

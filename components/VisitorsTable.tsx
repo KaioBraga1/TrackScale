@@ -20,6 +20,8 @@ interface VisitorsTableProps {
 
 export default function VisitorsTable({ visitors }: VisitorsTableProps) {
   const [activeVisitorId, setActiveVisitorId] = useState<string | null>(null)
+  const [showAll, setShowAll] = useState(false)
+  const visibleVisitors = showAll ? visitors : visitors.slice(0, 3)
 
   return (
     <>
@@ -43,8 +45,8 @@ export default function VisitorsTable({ visitors }: VisitorsTableProps) {
               <th className="text-right py-2 font-medium"></th>
             </tr>
           </thead>
-          <tbody>
-            {visitors.map((v) => (
+          <tbody id="visitor-rows">
+            {visibleVisitors.map((v) => (
               <tr key={v.id} className="border-b border-border/50 hover:bg-card/50 transition-colors">
                 <td className="py-2 text-muted">
                   {new Date(v.createdAt).toLocaleString('en-US', {
@@ -72,6 +74,19 @@ export default function VisitorsTable({ visitors }: VisitorsTableProps) {
           </tbody>
         </table>
       </div>
+      {visitors.length > 3 && (
+        <div className="pt-2 text-center">
+          <button
+            type="button"
+            onClick={() => setShowAll((current) => !current)}
+            className="btn-ghost px-3 py-1.5 text-sm"
+            aria-controls="visitor-rows"
+            aria-expanded={showAll}
+          >
+            {showAll ? 'Show less' : `View all (${visitors.length})`}
+          </button>
+        </div>
+      )}
     </>
   )
 }

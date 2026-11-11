@@ -138,7 +138,27 @@ export default async function CampaignsPage({
       )}
       {searchParams.error === 'meta_not_configured' && (
         <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: 13 }}>
-          Meta App credentials not configured. Set META_APP_ID and META_APP_SECRET environment variables.
+          Meta App credentials not configured. Set both META_APP_ID and META_APP_SECRET environment variables.
+        </div>
+      )}
+      {searchParams.error === 'meta_oauth_denied' && (
+        <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: 13 }}>
+          Meta authorization was canceled or denied. Try connecting again and approve the requested permissions.
+        </div>
+      )}
+      {searchParams.error === 'missing_oauth_code' && (
+        <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: 13 }}>
+          Meta did not return an authorization code. Please try connecting again.
+        </div>
+      )}
+      {searchParams.error === 'invalid_state' && (
+        <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: 13 }}>
+          Meta authorization expired or could not be verified. Please try connecting again.
+        </div>
+      )}
+      {searchParams.error === 'token_exchange_failed' && (
+        <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: 13 }}>
+          TrackScale could not finish connecting to Meta. Check the Meta app credentials and callback URL, then try again.
         </div>
       )}
 
