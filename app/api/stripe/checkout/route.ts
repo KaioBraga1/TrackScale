@@ -29,30 +29,35 @@ export async function POST(request: NextRequest) {
   })
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-  // Ensure a Stripe customer exists for this user
-  let customerId = user.stripeCustomerId
-  if (!customerId) {
-    const customer = await getStripe().customers.create({
-      email: user.email,
-      metadata: { userId: user.id },
-    })
-    customerId = customer.id
-    await prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } })
-  }
-
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-  const checkout = await getStripe().checkout.sessions.create({
-    mode: 'subscription',
-    customer: customerId,
-    line_items: [{ price: planDef.priceId, quantity: 1 }],
-    allow_promotion_codes: true,
-    subscription_data: TRIAL_DAYS > 0 ? { trial_period_days: TRIAL_DAYS } : undefined,
-    client_reference_id: user.id,
-    metadata: { userId: user.id, plan },
-    success_url: `${appUrl}/settings?tab=membership&checkout=success`,
-    cancel_url: `${appUrl}/settings?tab=membership&checkout=cancelled`,
-  })
+  try {
+    // Ensure a Stripe customer exists for this user
+    let customerId = user.stripeCustomerId
+    if (!customerId) {
+      const customer = await getStripe().customers.create({
+        email: user.email,
+        metadata: { userId: user.id },
+      })
+      customerId = customer.id
+      await prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } })
+    }
 
-  return NextResponse.json({ url: checkout.url })
+    const checkout = await getStripe().checkout.sessions.create({
+      mode: 'subscription',
+      customer: customerId,
+      line_items: [{ price: planDef.priceId, quantity: 1 }],
+      allow_promotion_codes: true,
+      subscription_data: TRIAL_DAYS > 0 ? { trial_period_days: TRIAL_DAYS } : undefined,
+      client_reference_id: user.id,
+      metadata: { userId: user.id, plan },
+      success_url: `${appUrl}/settings?tab=membership&checkout=success`,
+      cancel_url: `${appUrl}/settings?tab=membership&checkout=cancelled`,
+    })
+    return NextResponse.json({ url: checkout.url })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Stripe checkout failed'
+    console.error('Stripe checkout error:', message)
+    return NextResponse.json({ error: message }, { status: 400 })
+  }
 }

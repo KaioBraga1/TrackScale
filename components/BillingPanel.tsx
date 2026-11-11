@@ -36,6 +36,13 @@ export default function BillingPanel({
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Read the body as text first so a non-JSON error (500/HTML) surfaces its real
+  // message instead of a cryptic "string did not match the expected pattern".
+  const parse = async (res: Response): Promise<{ url?: string; error?: string }> => {
+    const text = await res.text()
+    try { return JSON.parse(text) } catch { return { error: text.slice(0, 200) || `HTTP ${res.status}` } }
+  }
+
   const subscribe = async (plan: PlanId) => {
     setLoading(plan); setError(null)
     try {
@@ -44,8 +51,8 @@ export default function BillingPanel({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Checkout failed')
+      const data = await parse(res)
+      if (!res.ok || !data.url) throw new Error(data.error ?? 'Checkout failed')
       window.location.href = data.url
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')
@@ -57,8 +64,8 @@ export default function BillingPanel({
     setLoading('portal'); setError(null)
     try {
       const res = await fetch('/api/stripe/portal', { method: 'POST' })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Could not open billing portal')
+      const data = await parse(res)
+      if (!res.ok || !data.url) throw new Error(data.error ?? 'Could not open billing portal')
       window.location.href = data.url
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')
