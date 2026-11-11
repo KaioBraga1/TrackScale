@@ -13,10 +13,12 @@ async function metaFetch<T>(endpoint: string, token: string, params?: Record<str
   return res.json() as Promise<T>
 }
 
-export function getMetaOAuthUrl(state: string): string {
+export const META_REDIRECT_PATH = '/api/auth/meta/callback'
+
+export function getMetaOAuthUrl(state: string, redirectUri: string): string {
   const params = new URLSearchParams({
     client_id: process.env.META_APP_ID ?? '',
-    redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/meta/callback`,
+    redirect_uri: redirectUri,
     scope: 'ads_read,ads_management',
     response_type: 'code',
     state,
@@ -24,15 +26,18 @@ export function getMetaOAuthUrl(state: string): string {
   return `https://www.facebook.com/${API_VERSION}/dialog/oauth?${params}`
 }
 
-export async function exchangeCodeForToken(code: string): Promise<{ access_token: string; token_type: string; expires_in?: number }> {
+export async function exchangeCodeForToken(code: string, redirectUri: string): Promise<{ access_token: string; token_type: string; expires_in?: number }> {
   const params = new URLSearchParams({
     client_id: process.env.META_APP_ID ?? '',
     client_secret: process.env.META_APP_SECRET ?? '',
-    redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/meta/callback`,
+    redirect_uri: redirectUri,
     code,
   })
   const res = await fetch(`${BASE}/oauth/access_token?${params}`)
-  if (!res.ok) throw new Error('Failed to exchange code for Meta token')
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null)
+    throw new Error((detail as { error?: { message?: string } })?.error?.message ?? 'Failed to exchange code for Meta token')
+  }
   return res.json()
 }
 

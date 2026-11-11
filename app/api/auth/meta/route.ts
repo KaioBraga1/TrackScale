@@ -1,9 +1,10 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
-import { getMetaOAuthUrl } from '@/lib/meta'
+import { getMetaOAuthUrl, META_REDIRECT_PATH } from '@/lib/meta'
+import { getAppBaseUrl } from '@/lib/base-url'
 import { randomBytes } from 'crypto'
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
@@ -12,7 +13,8 @@ export async function GET() {
   }
 
   const state = randomBytes(16).toString('hex')
-  const oauthUrl = getMetaOAuthUrl(state)
+  const redirectUri = `${getAppBaseUrl(request)}${META_REDIRECT_PATH}`
+  const oauthUrl = getMetaOAuthUrl(state, redirectUri)
 
   // Store state in a short-lived cookie (checked in callback)
   const response = new Response(null, {

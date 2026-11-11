@@ -72,7 +72,7 @@ function MetricCard({ label, value, sub, color = '#a855f7', icon }: {
 export default async function CampaignsPage({
   searchParams,
 }: {
-  searchParams: { period?: string; error?: string; connected?: string; disconnected?: string }
+  searchParams: { period?: string; error?: string; connected?: string; disconnected?: string; detail?: string }
 }) {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
@@ -158,7 +158,8 @@ export default async function CampaignsPage({
       )}
       {searchParams.error === 'token_exchange_failed' && (
         <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: 13 }}>
-          TrackScale could not finish connecting to Meta. Check the Meta app credentials and callback URL, then try again.
+          TrackScaler could not finish connecting to Meta. Check the Meta app credentials and callback URL, then try again.
+          {searchParams.detail && <div style={{ marginTop: 6, fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11.5, opacity: 0.85 }}>Meta says: {searchParams.detail}</div>}
         </div>
       )}
 

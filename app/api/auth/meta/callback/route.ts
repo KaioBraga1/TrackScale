@@ -2,7 +2,8 @@ import { type NextRequest } from 'next/server'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { exchangeCodeForToken, getLongLivedToken, getMetaMe, getAdAccounts } from '@/lib/meta'
+import { exchangeCodeForToken, getLongLivedToken, getMetaMe, getAdAccounts, META_REDIRECT_PATH } from '@/lib/meta'
+import { getAppBaseUrl } from '@/lib/base-url'
 
 export async function GET(request: NextRequest) {
   const session = await auth()
@@ -23,8 +24,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Exchange code for short-lived token
-    const shortToken = await exchangeCodeForToken(code)
+    // Exchange code for short-lived token (redirect_uri must match the authorize step)
+    const redirectUri = `${getAppBaseUrl(request)}${META_REDIRECT_PATH}`
+    const shortToken = await exchangeCodeForToken(code, redirectUri)
 
     // Exchange for long-lived token (~60 days)
     const longToken = await getLongLivedToken(shortToken.access_token)
@@ -64,7 +66,8 @@ export async function GET(request: NextRequest) {
     })
   } catch (err) {
     console.error('Meta OAuth callback error:', err)
-    redirect('/campaigns?error=token_exchange_failed')
+    const detail = err instanceof Error ? err.message.slice(0, 160) : 'unknown error'
+    redirect(`/campaigns?error=token_exchange_failed&detail=${encodeURIComponent(detail)}`)
   }
 
   const response = new Response(null, {
