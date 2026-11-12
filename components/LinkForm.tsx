@@ -112,6 +112,7 @@ export default function LinkForm({
   const [spotifyPlaylistId, setSpotifyPlaylistId] = useState(defaultValues?.spotifyPlaylistId ?? '')
   const [chosenPixels, setChosenPixels] = useState<string[]>(selectedPixelIds)
   const [chosenArtists, setChosenArtists] = useState<string[]>(selectedArtistIds)
+  const [connectionTab, setConnectionTab] = useState<'artists' | 'pixels'>('artists')
   const [draggingPlatform, setDraggingPlatform] = useState<string | null>(null)
 
   // Customization state
@@ -580,41 +581,69 @@ export default function LinkForm({
 
         <section className="card space-y-3 border-purple-900/30">
           <h2 className="font-semibold text-sm text-white">Data Connections</h2>
-          {artists.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs text-muted">Assigned artists</p>
-              {artists.map((artistOption) => (
-                <label key={artistOption.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={chosenArtists.includes(artistOption.id)}
-                    onChange={(event) => setChosenArtists((ids) =>
-                      event.target.checked ? [...ids, artistOption.id] : ids.filter((id) => id !== artistOption.id)
-                    )}
-                  />
-                  <span>{artistOption.name}</span>
-                </label>
-              ))}
-            </div>
+          <div role="tablist" className="flex gap-1 border-b border-purple-900/30">
+            {([
+              ['artists', `Artists (${chosenArtists.length})`],
+              ['pixels', `Pixels (${chosenPixels.length})`],
+            ] as const).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={connectionTab === id}
+                onClick={() => setConnectionTab(id)}
+                className={`px-3 py-2 text-xs -mb-px border-b-2 transition-colors ${
+                  connectionTab === id ? 'border-purple-500 text-white' : 'border-transparent text-muted hover:text-white'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {connectionTab === 'artists' && (
+            artists.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-xs text-muted">Assigned artists</p>
+                {artists.map((artistOption) => (
+                  <label key={artistOption.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={chosenArtists.includes(artistOption.id)}
+                      onChange={(event) => setChosenArtists((ids) =>
+                        event.target.checked ? [...ids, artistOption.id] : ids.filter((id) => id !== artistOption.id)
+                      )}
+                    />
+                    <span>{artistOption.name}</span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">No artists yet. <Link href="/artists" className="text-accent hover:underline">Add in Artists</Link></p>
+            )
           )}
-          {pixels.length ? (
-            <div className="space-y-2">
-              {pixels.map((pixel) => (
-                <label key={pixel.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={chosenPixels.includes(pixel.id)}
-                    onChange={(event) => setChosenPixels((ids) =>
-                      event.target.checked ? [...ids, pixel.id] : ids.filter((id) => id !== pixel.id)
-                    )}
-                  />
-                  <span>{pixel.name}</span>
-                  <span className="font-mono text-xs text-muted">••••{pixel.metaPixelId.slice(-4)}</span>
-                </label>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted">No pixels added. <Link href="/tracking" className="text-accent hover:underline">Add in Tracking</Link></p>
+
+          {connectionTab === 'pixels' && (
+            pixels.length ? (
+              <div className="space-y-2">
+                <p className="text-xs text-muted">Assigned pixels</p>
+                {pixels.map((pixel) => (
+                  <label key={pixel.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={chosenPixels.includes(pixel.id)}
+                      onChange={(event) => setChosenPixels((ids) =>
+                        event.target.checked ? [...ids, pixel.id] : ids.filter((id) => id !== pixel.id)
+                      )}
+                    />
+                    <span>{pixel.name}</span>
+                    <span className="font-mono text-xs text-muted">••••{pixel.metaPixelId.slice(-4)}</span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">No pixels added. <Link href="/tracking" className="text-accent hover:underline">Add in Tracking</Link></p>
+            )
           )}
           <Link href="/tracking" className="text-xs text-accent hover:underline">Manage pixels →</Link>
         </section>

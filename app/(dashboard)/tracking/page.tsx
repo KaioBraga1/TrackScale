@@ -1,14 +1,14 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { createPixel, deletePixel, updatePixel } from './actions'
+import { createPixel, deletePixel, testPixel, updatePixel } from './actions'
 
 export const metadata = { title: 'Tracking | TrackScaler' }
 
 export default async function TrackingPage({
   searchParams,
 }: {
-  searchParams: { created?: string; updated?: string; deleted?: string; error?: string }
+  searchParams: { created?: string; updated?: string; deleted?: string; error?: string; test?: string; detail?: string }
 }) {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
@@ -39,6 +39,14 @@ export default async function TrackingPage({
     : searchParams.deleted ? 'Pixel removed.'
     : null
 
+  const testOk = searchParams.test === 'ok'
+  const testMessage =
+    searchParams.test === 'ok' ? 'Test event accepted by Meta. Open Events Manager → Test Events to see it.'
+    : searchParams.test === 'nocode' ? 'Add a Test Event Code to this pixel first (Events Manager → Test Events).'
+    : searchParams.test === 'notoken' ? 'Add an API Token to this pixel first.'
+    : searchParams.test === 'fail' ? `Meta rejected the test event: ${searchParams.detail ?? 'unknown error'}`
+    : null
+
   return (
     <div className="max-w-4xl space-y-6">
       <header>
@@ -59,10 +67,22 @@ export default async function TrackingPage({
         </div>
       )}
 
+      {testMessage && (
+        <div
+          role="status"
+          className="rounded-lg border px-4 py-3 text-sm"
+          style={testOk
+            ? { borderColor: 'rgba(16,185,129,0.3)', background: 'rgba(16,185,129,0.08)', color: '#34d399' }
+            : { borderColor: 'rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#f87171' }}
+        >
+          {testMessage}
+        </div>
+      )}
+
       {/* Add pixel form */}
       <section className="card space-y-4">
         <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Add Pixel</h2>
-        <form action={createPixel} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
+        <form action={createPixel} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="label">Pixel name</label>
             <input name="name" required maxLength={80} className="input" placeholder="Osten Meta Ads" />
@@ -89,7 +109,30 @@ export default async function TrackingPage({
               </select>
             </div>
           )}
-          <button type="submit" className="btn-primary self-end">Add</button>
+          <div>
+            <label className="label">API Token (Conversions API)</label>
+            <input
+              name="capiAccessToken"
+              type="password"
+              autoComplete="off"
+              maxLength={500}
+              className="input font-mono"
+              placeholder="EAAB..."
+            />
+            <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>Events Manager → Settings → Conversions API → Generate access token. Stored encrypted.</p>
+          </div>
+          <div>
+            <label className="label">Test Event Code</label>
+            <input
+              name="testEventCode"
+              autoComplete="off"
+              maxLength={14}
+              className="input font-mono"
+              placeholder="TEST12345"
+            />
+            <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>Events Manager → Test Events. Only needed while testing — remove it for real traffic.</p>
+          </div>
+          <button type="submit" className="btn-primary sm:col-span-2 sm:justify-self-start">Add</button>
         </form>
       </section>
 
@@ -121,10 +164,24 @@ export default async function TrackingPage({
                     <code className="mt-1 block font-mono text-xs" style={{ color: 'var(--muted)' }}>{pixel.metaPixelId}</code>
                   </details>
                 </div>
-                <form action={deletePixel}>
-                  <input type="hidden" name="id" value={pixel.id} />
-                  <button className="btn-danger text-xs" type="submit">Remove</button>
-                </form>
+                <div className="flex flex-wrap items-center gap-2">
+                  <form action={testPixel}>
+                    <input type="hidden" name="id" value={pixel.id} />
+                    <button className="btn-secondary text-xs" type="submit">Send test event</button>
+                  </form>
+                  <form action={deletePixel}>
+                    <input type="hidden" name="id" value={pixel.id} />
+                    <button className="btn-danger text-xs" type="submit">Remove</button>
+                  </form>
+                </div>
+              </div>
+
+              {/* Server-side status */}
+              <div className="flex flex-wrap gap-2">
+                <span className={pixel.capiAccessToken ? 'badge-accent' : 'badge-muted'}>
+                  {pixel.capiAccessToken ? 'API token ✓' : 'No API token (browser only)'}
+                </span>
+                {pixel.testEventCode && <span className="badge-muted">Test code: {pixel.testEventCode}</span>}
               </div>
 
               {/* Assigned artists + links */}
@@ -145,7 +202,7 @@ export default async function TrackingPage({
               {/* Edit */}
               <details style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
                 <summary className="cursor-pointer text-xs" style={{ color: 'var(--muted)' }}>Edit pixel ▾</summary>
-                <form action={updatePixel} className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
+                <form action={updatePixel} className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input type="hidden" name="id" value={pixel.id} />
                   <div>
                     <label className="label">Name</label>
@@ -171,7 +228,34 @@ export default async function TrackingPage({
                       </select>
                     </div>
                   )}
-                  <button type="submit" className="btn-secondary self-end text-sm">Save</button>
+                  <div>
+                    <label className="label">API Token (Conversions API)</label>
+                    <input
+                      name="capiAccessToken"
+                      type="password"
+                      autoComplete="off"
+                      maxLength={500}
+                      className="input font-mono"
+                      placeholder={pixel.capiAccessToken ? 'Saved — leave blank to keep' : 'EAAB...'}
+                    />
+                    {pixel.capiAccessToken && (
+                      <label className="mt-1 flex items-center gap-2 text-xs" style={{ color: 'var(--muted)' }}>
+                        <input type="checkbox" name="clearToken" /> Remove saved token
+                      </label>
+                    )}
+                  </div>
+                  <div>
+                    <label className="label">Test Event Code</label>
+                    <input
+                      name="testEventCode"
+                      defaultValue={pixel.testEventCode ?? ''}
+                      autoComplete="off"
+                      maxLength={14}
+                      className="input font-mono"
+                      placeholder="TEST12345"
+                    />
+                  </div>
+                  <button type="submit" className="btn-secondary text-sm sm:col-span-2 sm:justify-self-start">Save</button>
                 </form>
               </details>
             </article>

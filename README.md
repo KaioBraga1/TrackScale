@@ -18,7 +18,7 @@ Cada acesso é registrado com país, cidade, dispositivo, plataforma escolhida e
 
 ### Smart Links
 - Cole qualquer URL de streaming — título, artista e capa são buscados automaticamente via Odesli
-- Slug customizável (`trackscale.app/l/nome-da-musica`)
+- Slug customizável (`seudominio.com/nome-da-musica`)
 - Deeplink para abrir diretamente no app instalado
 - Temas customizáveis por link
 - Ativo/inativo com um clique
@@ -73,9 +73,10 @@ Cada acesso é registrado com país, cidade, dispositivo, plataforma escolhida e
 | Linguagem | TypeScript |
 | Banco de dados | PostgreSQL via Neon |
 | ORM | Prisma |
-| Auth | NextAuth.js (credentials) |
+| Auth | NextAuth v5 (credentials, JWT) |
 | Estilo | Tailwind CSS |
-| Email | Configurável (lib/email.ts) |
+| Email | Resend (lib/email.ts) |
+| Billing | Stripe |
 | Deploy | Vercel |
 
 ---
@@ -86,35 +87,48 @@ Cada acesso é registrado com país, cidade, dispositivo, plataforma escolhida e
 trackscale-app/
 ├── app/
 │   ├── (auth)/             # Login, register, forgot/reset password
-│   ├── (dashboard)/        # Dashboard, links, artistas, settings, tracking
+│   ├── (dashboard)/        # Área logada (cada rota: page.tsx + actions.ts)
 │   │   ├── dashboard/      # Visão geral com stats
 │   │   ├── links/          # CRUD de smart links + analytics por link
 │   │   ├── artists/        # Gerenciamento de artistas
-│   │   ├── settings/       # Conta, pixels, integrações
-│   │   └── tracking/       # Visitantes e eventos de rastreamento
-│   ├── l/[slug]/           # Página pública do smart link
+│   │   ├── tracking/       # Visitantes, pixels e eventos de rastreamento
+│   │   ├── settings/       # Conta, integrações, billing
+│   │   └── campaigns/, creatives/, email/, fan-data/, courses/, refer/
+│   ├── [slug]/             # Página pública do smart link (na raiz do domínio)
 │   ├── api/
-│   │   ├── auth/           # NextAuth + forgot/reset + Spotify OAuth
+│   │   ├── auth/           # NextAuth, forgot/reset password, OAuth Spotify e Meta
 │   │   ├── click/          # Registro de cliques + bot detection
 │   │   ├── consent/        # Atualização de consentimento LGPD
-│   │   ├── links/          # Export CSV, followers
-│   │   ├── cron/           # Snapshot diário de seguidores
-│   │   └── visitors/       # Detalhes de visitante individual
+│   │   ├── links/          # Resolve (Odesli), export CSV, followers
+│   │   ├── spotify/        # Import de dados do Spotify
+│   │   ├── stripe/         # Checkout, portal e webhook
+│   │   ├── cron/           # Snapshot diário de seguidores de playlist
+│   │   ├── visitors/       # Detalhes de visitante individual
+│   │   ├── meta/           # Integração Meta Ads
+│   │   └── register/       # Cadastro de usuário
 │   ├── LandingPage.tsx     # Landing page pública
-│   └── page.tsx            # Root: redireciona para dashboard ou landing
-├── components/             # UI reutilizável
+│   └── page.tsx            # Root: landing ou redirect para o dashboard
+├── components/             # UI reutilizável (motion/ e ui/ para animações e primitivos)
 ├── lib/
-│   ├── auth.ts             # Config NextAuth
+│   ├── auth.ts             # Config NextAuth (credentials + JWT)
+│   ├── base-url.ts         # URL base da aplicação
 │   ├── bot-detection.ts    # Algoritmo de score de bot
-│   ├── email.ts            # Envio de email (reset de senha)
+│   ├── crypto.ts           # AES-256-GCM para tokens do Spotify
+│   ├── email.ts            # Envio de email (Resend)
 │   ├── geo.ts              # Geolocalização por IP
+│   ├── meta.ts             # Meta Ads / OAuth
 │   ├── meta-capi.ts        # Conversions API Meta
 │   ├── odesli.ts           # Fetch de metadados de música
 │   ├── prisma.ts           # Client Prisma singleton
-│   ├── rate-limit.ts       # Rate limiting de API
-│   └── spotify.ts          # Spotify API client
-└── prisma/
-    └── schema.prisma       # Schema do banco de dados
+│   ├── rate-limit.ts       # Rate limiting in-memory
+│   ├── spotify.ts          # Spotify API client (OAuth do usuário)
+│   ├── spotify-client-credentials.ts  # Spotify API sem login do usuário
+│   └── stripe.ts           # Client Stripe e mapeamento de planos
+├── prisma/
+│   └── schema.prisma       # Schema do banco de dados
+├── public/track.js         # Script de tracking do visitante
+├── types/                  # Extensões de tipos (next-auth)
+└── middleware.ts           # Protege rotas do dashboard
 ```
 
 ---
@@ -156,28 +170,48 @@ PasswordResetToken → tokens de redefinição de senha
 ```env
 # Banco de dados (Neon)
 DATABASE_URL=postgresql://...
-DATABASE_URL_UNPOOLED=postgresql://...
 
-# Auth
-NEXTAUTH_SECRET=...
-NEXTAUTH_URL=https://seudominio.com
+# Auth (openssl rand -base64 32)
+AUTH_SECRET=...
+
+# Criptografia dos tokens Spotify (openssl rand -hex 32)
+ENCRYPTION_KEY=...
 
 # Spotify
 SPOTIFY_CLIENT_ID=...
 SPOTIFY_CLIENT_SECRET=...
 SPOTIFY_REDIRECT_URI=https://seudominio.com/api/auth/spotify/callback
 
-# Email (ex: Resend)
-RESEND_API_KEY=...
-EMAIL_FROM=noreply@seudominio.com
+# Meta CAPI (server-side)
+META_CAPI_ACCESS_TOKEN=...
+META_CAPI_DEFAULT_PIXEL_ID=...   # opcional
+META_CAPI_TEST_EVENT_CODE=...    # vazio em produção
 
-# Meta CAPI (opcional)
-META_ACCESS_TOKEN=...
+# Meta Ads (Marketing API)
+META_APP_ID=...
+META_APP_SECRET=...
+
+# Email (Resend)
+RESEND_API_KEY=...
+RESEND_FROM=TrackScaler <noreply@seudominio.com>
+
+# Odesli
+ODESLI_API_KEY=...
+
+# Stripe
+STRIPE_SECRET_KEY=...
+STRIPE_WEBHOOK_SECRET=...
+STRIPE_PRICE_STARTER=...
+STRIPE_PRICE_GROWTH=...
+STRIPE_PRICE_SCALE=...
+STRIPE_TRIAL_DAYS=...
 
 # App
 NEXT_PUBLIC_APP_URL=https://seudominio.com
 CRON_SECRET=...
 ```
+
+Veja `.env.example` para a lista completa e comentários.
 
 ---
 
@@ -192,7 +226,7 @@ npm install
 cp .env.example .env
 
 # Migre o banco
-npx prisma migrate dev
+npm run db:push
 
 # Inicie o servidor
 npm run dev
@@ -206,7 +240,7 @@ Acesse `http://localhost:3000`.
 
 1. Importe o repositório no Vercel
 2. Configure todas as variáveis de ambiente
-3. O `vercel.json` já está configurado para rotear `/l/[slug]` corretamente
+3. O `vercel.json` já define o build e o cron diário; os smart links vivem na raiz (`/[slug]`)
 4. Cron job de seguidores de playlist: configure em Vercel Cron ou externo apontando para `/api/cron/playlist-followers` com o header `Authorization: Bearer $CRON_SECRET`
 
 ---

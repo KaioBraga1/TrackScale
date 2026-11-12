@@ -181,7 +181,7 @@ export default async function LinkStatsPage({
     ...(mode === 'consent' ? { consentGranted: true } : {}),
   }
   const visitorWhere = {
-    linkId: link.id, createdAt: { gte: start }, botScore: { lt: 0.5 },
+    linkId: link.id, createdAt: { gte: start },
     clicks: {
       some: {
         eventType: 'LINK_VIEW', createdAt: { gte: start }, isFiltered: false, botScore: { lt: 0.5 },

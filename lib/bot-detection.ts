@@ -13,8 +13,10 @@ export function serverHumanScore(userAgent: string, isDatacenter = false): numbe
   return Math.min(1, Math.max(0, score))
 }
 
-export function combinedHumanScore(serverScore: number, clientScore: number): number {
+export function combinedHumanScore(serverScore: number, clientScore?: number | null): number {
   const server = Math.min(1, Math.max(0, serverScore))
+  // Sem sinal do cliente (script não carregou) não é prova de bot: usa só o servidor.
+  if (clientScore === null || clientScore === undefined) return server
   const client = Math.min(1, Math.max(0, clientScore))
   return client * 0.6 + server * 0.4
 }

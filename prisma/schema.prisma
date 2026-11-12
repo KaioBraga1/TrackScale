@@ -111,15 +111,17 @@ model LinkArtist {
 }
 
 model Pixel {
-  id          String        @id @default(cuid())
-  userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name        String
-  metaPixelId String
-  links       LinkPixel[]
-  artists     ArtistPixel[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  metaPixelId     String
+  capiAccessToken String?       // Conversions API token (encrypted) for server-side events
+  testEventCode   String?       // Meta Test Events code (TESTxxxx) for the Events Manager tester
+  links           LinkPixel[]
+  artists         ArtistPixel[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@unique([userId, metaPixelId])
   @@index([userId])

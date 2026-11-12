@@ -9,6 +9,9 @@ export interface CapiEventData {
   eventName: 'PageView' | 'ViewContent' | 'Lead'
   eventId: string
   eventSourceUrl: string
+  // Código do Test Events do pixel (TESTxxxx). Só vai no payload se informado:
+  // com ele o evento aparece na hora na aba Test Events e NÃO conta como produção.
+  testEventCode?: string | null
   // User data — tudo que for PII é hasheado antes do envio
   clientIp: string
   clientUserAgent: string
@@ -51,8 +54,6 @@ function buildUserData(data: CapiEventData): Record<string, string | undefined> 
 }
 
 export async function sendCapiEvent(data: CapiEventData): Promise<void> {
-  const testEventCode = process.env.META_CAPI_TEST_EVENT_CODE
-
   const payload: Record<string, unknown> = {
     data: [
       {
@@ -66,7 +67,7 @@ export async function sendCapiEvent(data: CapiEventData): Promise<void> {
     ],
   }
 
-  if (testEventCode) payload.test_event_code = testEventCode
+  if (data.testEventCode) payload.test_event_code = data.testEventCode
 
   const url = `${CAPI_ENDPOINT}/${data.pixelId}/events?access_token=${data.accessToken}`
 
@@ -74,7 +75,7 @@ export async function sendCapiEvent(data: CapiEventData): Promise<void> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(5000),
+    signal: AbortSignal.timeout(3000),
   })
 
   if (!res.ok) {
@@ -91,9 +92,69 @@ export async function sendCapiEvent(data: CapiEventData): Promise<void> {
   }
 }
 
-// Fire-and-forget: nunca quebra o fluxo do visitante
-export function sendCapiEventSilent(data: CapiEventData): void {
-  sendCapiEvent(data).catch((err) => {
+// Nunca rejeita, então não quebra o fluxo do visitante. Deve ser aguardada
+// (await) pela rota: em serverless, a função pode ser congelada logo após a
+// resposta e um fetch solto se perderia.
+export async function sendCapiEventSilent(data: CapiEventData): Promise<void> {
+  try {
+    await sendCapiEvent(data)
+  } catch (err) {
     console.error('[capi] erro silenciado:', err instanceof Error ? err.message : 'unknown')
-  })
+  }
+}
+
+export interface CapiTestResult {
+  ok: boolean
+  detail: string
+}
+
+// Envio de teste iniciado pelo usuário na aba Tracking. Devolve a resposta real
+// do Meta (sem expor o token) para o usuário saber se o pixel + token funcionam.
+export async function sendCapiTest(params: {
+  pixelId: string
+  accessToken: string
+  testEventCode: string
+  clientIp: string
+  clientUserAgent: string
+  sourceUrl: string
+}): Promise<CapiTestResult> {
+  const payload = {
+    data: [
+      {
+        event_name: 'ViewContent',
+        event_time: Math.floor(Date.now() / 1000),
+        event_id: `test_${Date.now()}`,
+        event_source_url: params.sourceUrl,
+        action_source: 'website',
+        user_data: {
+          client_ip_address: params.clientIp,
+          client_user_agent: params.clientUserAgent,
+        },
+        custom_data: { content_name: 'TrackScaler Test Event' },
+      },
+    ],
+    test_event_code: params.testEventCode,
+  }
+
+  try {
+    const res = await fetch(
+      `${CAPI_ENDPOINT}/${params.pixelId}/events?access_token=${params.accessToken}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(8000),
+      }
+    )
+    const json = (await res.json().catch(() => ({}))) as {
+      events_received?: number
+      error?: { message?: string }
+    }
+    if (!res.ok) {
+      return { ok: false, detail: json.error?.message ?? `HTTP ${res.status}` }
+    }
+    return { ok: (json.events_received ?? 0) > 0, detail: `events_received=${json.events_received ?? 0}` }
+  } catch (err) {
+    return { ok: false, detail: err instanceof Error ? err.message : 'network error' }
+  }
 }

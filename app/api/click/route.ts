@@ -2,16 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { serverHumanScore, combinedHumanScore, isEventFiltered } from '@/lib/bot-detection'
-import { getGeoFromIP } from '@/lib/geo'
+import { getGeoFromIP, countryNameFromCode, type GeoResult } from '@/lib/geo'
 import { rateLimit } from '@/lib/rate-limit'
 import { sendCapiEventSilent } from '@/lib/meta-capi'
+import { decrypt } from '@/lib/crypto'
 
 const clickSchema = z.object({
   slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/),
   eventType: z.enum(['LINK_VIEW', 'PLATFORM_CLICK']),
   platform: z.string().max(30).optional().nullable(),
   fingerprint: z.string().max(64).optional().nullable(),
-  humanScoreClient: z.number().min(0).max(1).optional().default(0),
+  // null/ausente = track.js não carregou; o servidor usa só o próprio score
+  humanScoreClient: z.number().min(0).max(1).nullable().optional(),
   consentStatus: z.enum(['PENDING', 'GRANTED', 'DENIED']).optional().default('PENDING'),
   visitorId: z.string().cuid().optional().nullable(),
   utmSource: z.string().max(200).optional().nullable(),
@@ -91,13 +93,13 @@ export async function POST(req: NextRequest) {
           select: { name: true },
         },
         pixels: {
-          select: { pixel: { select: { metaPixelId: true } } },
+          select: { pixel: { select: PIXEL_CAPI_SELECT } },
         },
         artists: {
           select: {
             artist: {
               select: {
-                pixels: { select: { pixel: { select: { metaPixelId: true } } } },
+                pixels: { select: { pixel: { select: PIXEL_CAPI_SELECT } } },
               },
             },
           },
@@ -116,7 +118,23 @@ export async function POST(req: NextRequest) {
         })
       : null
 
-    const geo = await getGeoFromIP(ip)
+    let geo = await getGeoFromIP(ip)
+    // ip-api (plano grátis) estoura limite em picos e devolve null; nesse caso
+    // usa o país que a própria Vercel já resolveu, em vez de gravar "Unknown".
+    if (!geo?.country) {
+      const fallbackCountry = countryNameFromCode(req.headers.get('x-vercel-ip-country') ?? '')
+      if (fallbackCountry) {
+        geo = {
+          country: fallbackCountry,
+          region: geo?.region ?? null,
+          city: geo?.city ?? null,
+          zipCode: geo?.zipCode ?? null,
+          latitude: geo?.latitude ?? null,
+          longitude: geo?.longitude ?? null,
+          isDatacenter: geo?.isDatacenter ?? false,
+        } satisfies GeoResult
+      }
+    }
     const isDatacenter = geo?.isDatacenter ?? requestedVisitor?.isDatacenter ?? false
     const ua = req.headers.get('user-agent') ?? ''
     const humanScore = combinedHumanScore(
@@ -131,7 +149,12 @@ export async function POST(req: NextRequest) {
         requestedVisitor ??
         (fingerprint
           ? await prisma.visitor.findFirst({
-              where: { linkId: link.id, fingerprint },
+              where: {
+                linkId: link.id,
+                fingerprint,
+                // fingerprint é fraco (celulares iguais colidem): só junta no mesmo país
+                ...(geo?.country ? { country: geo.country } : {}),
+              },
               select: { id: true, consentStatus: true, isDatacenter: true },
             })
           : null)
@@ -143,6 +166,14 @@ export async function POST(req: NextRequest) {
             consentStatus,
             botScore,
             isDatacenter,
+            ...(utmSource ? { utmSource } : {}),
+            ...(utmMedium ? { utmMedium } : {}),
+            ...(utmCampaign ? { utmCampaign } : {}),
+            ...(utmContent ? { utmContent } : {}),
+            ...(utmTerm ? { utmTerm } : {}),
+            ...(fbclid ? { fbclid } : {}),
+            ...(gclid ? { gclid } : {}),
+            ...(clientReferrer ? { referrer: clientReferrer } : {}),
             ...(geo
               ? {
                   country: geo.country,
@@ -208,16 +239,16 @@ export async function POST(req: NextRequest) {
 
       // CAPI: dispara para todos os pixels vinculados ao link
       if (!filtered && visitor.consentStatus === 'GRANTED') {
-        const capiToken = process.env.META_CAPI_ACCESS_TOKEN
-        const pixelIds = resolvePixelIds(link)
-        if (capiToken && pixelIds.length > 0) {
+        const targets = resolveCapiTargets(link)
+        if (targets.length > 0) {
           const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-          for (const pixelId of pixelIds) {
+          await Promise.all(targets.map((target) =>
             sendCapiEventSilent({
-              pixelId,
-              accessToken: capiToken,
+              pixelId: target.pixelId,
+              accessToken: target.accessToken,
+              testEventCode: target.testEventCode,
               eventName: 'ViewContent',
-              eventId: `${viewClick.id}_${pixelId}`,
+              eventId: `${viewClick.id}_${target.pixelId}`,
               eventSourceUrl: `${appUrl}/${slug}`,
               clientIp: ip,
               clientUserAgent: ua,
@@ -228,7 +259,7 @@ export async function POST(req: NextRequest) {
               zip: geo?.zipCode ?? null,
               externalId: visitor.id,
             })
-          }
+          ))
         }
       }
 
@@ -260,16 +291,16 @@ export async function POST(req: NextRequest) {
 
     // CAPI Lead event no clique de plataforma — representa intenção de escuta
     if (!filtered && requestedVisitor?.consentStatus === 'GRANTED') {
-      const capiToken = process.env.META_CAPI_ACCESS_TOKEN
-      const pixelIds = resolvePixelIds(link)
-      if (capiToken && pixelIds.length > 0) {
+      const targets = resolveCapiTargets(link)
+      if (targets.length > 0) {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-        for (const pixelId of pixelIds) {
+        await Promise.all(targets.map((target) =>
           sendCapiEventSilent({
-            pixelId,
-            accessToken: capiToken,
+            pixelId: target.pixelId,
+            accessToken: target.accessToken,
+            testEventCode: target.testEventCode,
             eventName: 'Lead',
-            eventId: `${platformClick.id}_${pixelId}`,
+            eventId: `${platformClick.id}_${target.pixelId}`,
             eventSourceUrl: `${appUrl}/${slug}`,
             clientIp: ip,
             clientUserAgent: ua,
@@ -280,7 +311,7 @@ export async function POST(req: NextRequest) {
             zip: geo?.zipCode ?? null,
             externalId: requestedVisitor?.id ?? '',
           })
-        }
+        ))
       }
     }
 
@@ -294,20 +325,61 @@ export async function POST(req: NextRequest) {
   }
 }
 
-function resolvePixelIds(link: {
+const PIXEL_CAPI_SELECT = {
+  metaPixelId: true,
+  capiAccessToken: true,
+  testEventCode: true,
+} as const
+
+interface PixelCreds {
+  metaPixelId: string
+  capiAccessToken?: string | null
+  testEventCode?: string | null
+}
+
+interface CapiTarget {
+  pixelId: string
+  accessToken: string
+  testEventCode: string | null
+}
+
+// Cada pixel usa o próprio token e test code. O token global (.env) só entra
+// como fallback para pixels sem token próprio. Pixels sem nenhum token ficam
+// só com o pixel do navegador.
+function resolveCapiTargets(link: {
   metaPixelId?: string | null
-  pixels?: { pixel: { metaPixelId: string } }[]
-  artists?: { artist: { pixels: { pixel: { metaPixelId: string } }[] } }[]
-}): string[] {
-  const ids = new Set<string>()
-  if (link.metaPixelId) ids.add(link.metaPixelId)
-  for (const lp of link.pixels ?? []) ids.add(lp.pixel.metaPixelId)
+  pixels?: { pixel: PixelCreds }[]
+  artists?: { artist: { pixels: { pixel: PixelCreds }[] } }[]
+}): CapiTarget[] {
+  const pixels = new Map<string, PixelCreds>()
+  const add = (p: PixelCreds) => {
+    const prev = pixels.get(p.metaPixelId)
+    if (!prev || (!prev.capiAccessToken && p.capiAccessToken)) pixels.set(p.metaPixelId, p)
+  }
+  if (link.metaPixelId) add({ metaPixelId: link.metaPixelId })
+  for (const lp of link.pixels ?? []) add(lp.pixel)
   for (const la of link.artists ?? []) {
-    for (const ap of la.artist.pixels) ids.add(ap.pixel.metaPixelId)
+    for (const ap of la.artist.pixels) add(ap.pixel)
   }
   const fallback = process.env.META_CAPI_DEFAULT_PIXEL_ID
-  if (ids.size === 0 && fallback) ids.add(fallback)
-  return [...ids]
+  if (pixels.size === 0 && fallback) add({ metaPixelId: fallback })
+
+  const envToken = process.env.META_CAPI_ACCESS_TOKEN || null
+  const targets: CapiTarget[] = []
+  for (const p of pixels.values()) {
+    let token: string | null = null
+    if (p.capiAccessToken) {
+      try {
+        token = decrypt(p.capiAccessToken)
+      } catch {
+        console.error('[capi] token do pixel ilegível', { pixelId: p.metaPixelId })
+      }
+    }
+    token ??= envToken
+    if (!token) continue
+    targets.push({ pixelId: p.metaPixelId, accessToken: token, testEventCode: p.testEventCode ?? null })
+  }
+  return targets
 }
 
 function parseBrowser(ua: string): string | null {

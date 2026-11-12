@@ -39,7 +39,7 @@ declare global {
     __trackscale?: {
       collect: () => {
         fingerprint: string | null
-        humanScoreClient: number
+        humanScoreClient: number | null
       }
     }
     fbq?: MetaPixelFunction
@@ -91,9 +91,14 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
     if (trackedRef.current) return
     trackedRef.current = true
 
+    void (async () => {
+    // track.js carrega depois da hidratação; espera até 1,5 s para não registrar
+    // humano real como bot por falta do sinal do cliente.
+    await waitForTracker()
+
     const clientData = window.__trackscale?.collect?.() ?? {
       fingerprint: null,
-      humanScoreClient: 0,
+      humanScoreClient: null,
     }
     const utmData = parseUTMParams()
     const params = new URLSearchParams(window.location.search)
@@ -163,6 +168,7 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
         setIsVerified(false)
         setConsentPersisted(false)
       })
+    })()
   }, [persistConsent, slug])
 
   useEffect(() => {
@@ -206,7 +212,7 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
     try {
       const clientData = window.__trackscale?.collect?.() ?? {
         fingerprint: null,
-        humanScoreClient: 0,
+        humanScoreClient: null,
       }
       const utmData = parseUTMParams()
       const body = JSON.stringify({
@@ -296,6 +302,19 @@ export default function SmartLink({ slug, platforms, metaPixelIds, theme, custom
       )}
     </div>
   )
+}
+
+function waitForTracker(timeoutMs = 1500): Promise<void> {
+  return new Promise((resolve) => {
+    if (window.__trackscale?.collect) return resolve()
+    const start = Date.now()
+    const timer = setInterval(() => {
+      if (window.__trackscale?.collect || Date.now() - start >= timeoutMs) {
+        clearInterval(timer)
+        resolve()
+      }
+    }, 50)
+  })
 }
 
 function readConsentStatus(): ConsentStatus {

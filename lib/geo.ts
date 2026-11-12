@@ -92,6 +92,17 @@ async function lookupGeo(ip: string): Promise<GeoResult | null> {
   }
 }
 
+// Converte o código ISO do header x-vercel-ip-country ("CA") no mesmo nome
+// em inglês que o ip-api retorna ("Canada"), para não misturar formatos no banco.
+export function countryNameFromCode(code: string): string | null {
+  if (!/^[A-Za-z]{2}$/.test(code) || code.toUpperCase() === 'XX') return null
+  try {
+    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code.toUpperCase()) ?? null
+  } catch {
+    return null
+  }
+}
+
 function isPrivateIP(ip: string): boolean {
   const version = isIP(ip)
   if (version === 0) return true
